@@ -76,10 +76,10 @@ I put stars around the src directory, which we would mainly focus on.
 
 In short,
 
-components contains the React components
-styles contains the css file to the corresponding React components
-redux contains the redux store
-js constains the logics
+components contains the React components <br />
+styles contains the css file to the corresponding React components <br />
+redux contains the redux store <br />
+js constains the logics <br />
 
 In detail,
 
