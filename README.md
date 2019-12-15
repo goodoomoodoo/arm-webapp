@@ -75,19 +75,19 @@ arm-webapp
 I put stars around the src directory, which we would mainly focus on.
 
 In short,
-    components contains the React components
-    styles contains the css file to the corresponding React components
-    redux contains the redux store
-    js constains the logics
+⋅⋅⋅components contains the React components
+⋅⋅⋅styles contains the css file to the corresponding React components
+⋅⋅⋅redux contains the redux store
+⋅⋅⋅js constains the logics
 
 In detail:
 
 components dir
-    -Rblock is the register block
-    -Rcontainer contains the Rblocks
-    -DevContainer contains the development interface
+    * Rblock is the register block
+    * Rcontainer contains the Rblocks
+    * DevContainer contains the development interface
 js dir
-    -:construction: Still working on the documentation... may never be out...
+    * :construction: Still working on the documentation... may never be out...
 
 ## Built With
 
