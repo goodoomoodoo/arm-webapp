@@ -1,0 +1,9 @@
+.Rblock{
+    position: relative;
+}
+
+.Rblock-val {
+    position: relative;
+    width: 5em;
+    padding: 1em;
+}
