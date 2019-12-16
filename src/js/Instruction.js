@@ -195,6 +195,12 @@ const exec = ( iname, argv ) => {
             else 
                 res = register[ rSrc ];
             break;
+        case 'mvn':
+            if( isImmd( rSrc ) )
+                res = ~parseInt( rSrc.substring( 1, rSrc.length ), 10 );
+            else
+                res = ~register[ rSrc ];
+            break;
         case 'add':
             if( isImmd( rSrc2 ) )
                 res = register[ rSrc ] + rVal;
@@ -206,6 +212,42 @@ const exec = ( iname, argv ) => {
                 res = register[ rSrc ] - rVal;
             else
                 res = register[ rSrc ] - register[ rSrc2 ];
+            break;
+        case 'and':
+            if( isImmd( rSrc2 ) )
+                res = register[ rSrc ] & rVal;
+            else
+                res = register[ rSrc ] & register[ rSrc2 ];
+            break;
+        case 'orr':
+            if( isImmd( rSrc2 ) )
+                res = register[ rSrc ] | rVal;
+            else
+                res = register[ rSrc ] | register[ rSrc2 ];
+            break;
+        case 'lsl':
+            if( isImmd( rSrc2 ) )
+                res = register[ rSrc ] << rVal;
+            else 
+                res = register[ rSrc ] << register[rSrc2 ];
+            break;
+        case 'lsr':
+            if( isImmd( rSrc2 ) )
+                res = register[ rSrc ] >>> rVal;
+            else
+                res = register[ rSrc ] >>> register[ rSrc2 ];
+            break;
+        case 'asr':
+            if( isImmd( rSrc2 ) )
+                res = register[ rSrc ] >> rVal;
+            else
+                res = register[ rSrc ] >> register[ rSrc2 ];
+            break;
+        case 'eor':
+            if( isImmd( rSrc2 ) )
+                res = register[ rSrc ] ^ rVal;
+            else
+                res = register[ rSrc ] ^ register[ rSrc2 ];
             break;
         default:
             console.log( 'error' );
