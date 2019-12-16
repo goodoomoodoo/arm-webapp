@@ -11,11 +11,6 @@
  * TODO: create documentation
  */
 
-/******************************************************************************
- * USED FOR EXECUTION
- * 
- ******************************************************************************/
-
 /**
  * Check if string represent immediate value
  * @param {String} str 
@@ -23,11 +18,6 @@
 const isImmd = str => {
     return str.charAt( 0 ) == '#';
 }
-
-/******************************************************************************
- * USED FOR TRANSPILE
- * 
- ******************************************************************************/
 
 /**
  * Check if instruction has label
@@ -39,11 +29,16 @@ const hasLabel = instr => {
     if( fword == null )
         return false;
     
-    return isLabel( fword );
+    return isLabel( fword.name ) && isValidLabel( fword.name );
 }
 
-// TODO
-const isValidLabel = undefined;
+/**
+ * Check if label is valid, only alphabets and numbers
+ * @param {String} str label
+ */
+const isValidLabel = str => {
+    return str.match( /^[a-zA-Z0-9]+$/ );
+};
 
 /**
  * Check if the string is a label
@@ -73,10 +68,11 @@ const getFirstWord = instr => {
         i++;
     }
 
-    return str;
+    return { name: str, index: i };
 }
  
 /**
+ * Returns the instruction of a line
  * @param {string} input whole line of instruction
  * @return {object} { the instruction of this input, index at end of instr }
  */
@@ -112,7 +108,7 @@ const getInstructionName = ( input ) => {
 }
 
 /**
- * 
+ * Return a list of argument registers
  * @param {string} input whole line of instruction
  * @param {int} index start of the instruction
  * @return {string array} array of arguments
@@ -150,6 +146,11 @@ const getArguments = ( input, index ) => {
     return arr;
 }
 
+/**
+ * Return instruction type
+ * 0: Branching 1: Data-Processing 2:Memory-Accessing
+ * @param {String} iname instruction name
+ */
 const getOpType = iname => {
 
     let dataProcessing = instrType[ 1 ];
@@ -176,14 +177,12 @@ const getOpType = iname => {
     return -1; // Instruction unfound
 }
 
-const exec = ( iname, argv ) => {
+const execDataProc = ( opType, iname, argv ) => {
     let rd = argv[ 0 ];
     let rSrc = argv.length > 0 ? argv[ 1 ] : undefined;
     let rSrc2 = argv.length > 1 ? argv[ 2 ] : undefined;
     let rVal = undefined;
     let res = undefined;
-
-    let opType = getOpType( iname );
 
     if( rSrc2 && isImmd( rSrc2 ) )
         rVal = parseInt( rSrc2.substring( 1, rSrc2.length ) );
@@ -250,14 +249,28 @@ const exec = ( iname, argv ) => {
                 res = register[ rSrc ] ^ register[ rSrc2 ];
             break;
         default:
-            console.log( 'error' );
+            console.log( 'error: case unfound in Data Processing' );
     }
 
     // Perform
     register[ rd ] = res;
 
-    if( opType != -1 )
-        return { opType: opType, register: rd, value: res };
+    return { opType: opType, register: rd, value: res };
+}
+
+/**
+ * Execute the instruction with given list of arguments
+ * @param {String} iname instruction name
+ * @param {Array} argv list of arguments, or arg registers
+ */
+const exec = ( iname, argv ) => {
+
+    let opType = getOpType( iname );
+
+    if( opType == 1 )
+        return execDataProc( opType, iname, argv );
+    // else if( opType == 2 )
+    //     return execMemAcc( opType, iname, argv );
     else
         return { error: 'Illegal insturction found', instr: iname };
 }
@@ -279,22 +292,32 @@ const transpileInstrArr = instrArr => {
     for( let i = 0; i < instrArr.length; i++ ) {
 
         let currInstr = instrArr[ i ];
-        if( hasLabel( currInstr ) )
-            ;// TODO
-        else {
-            let iname = getInstructionName( currInstr );
-            let argv = getArguments( currInstr, iname.index );
-            let resObj = exec( iname.name, argv );
-
-            if( resObj.error != undefined )
-                return resObj;
-            else
-                objArr.push( resObj );
+        if( hasLabel( currInstr ) ) {
+            let label = getFirstWord( currInstr );
+            let labelName = label.name.substring( 0, label.name.length - 1 );
+            labelObj[ labelName ] = i;
+            currInstr = currInstr.substring( label.index, currInstr.length );
         }
+
+        // If the current Instruction is only consists of spaces and tabs,
+        // continue to the next Instruction.
+        if( currInstr.trim().length == 0 )
+            continue;
+
+        let iname = getInstructionName( currInstr );
+        let argv = getArguments( currInstr, iname.index );
+        let resObj = exec( iname.name, argv );
+
+        if( resObj.error != undefined )
+            return resObj;
+        else
+            objArr.push( resObj );    
     }
 
     return objArr;
 }
+
+var labelObj = {};
 
 var register = {
     r0: 0,
@@ -323,12 +346,6 @@ const instrType = {
 };
 
 const Instruction = {
-    isImmd: isImmd,
-    isLabel: isLabel,
-    hasLabel: hasLabel,
-    getFirstWord: getFirstWord,
-    getArguments: getArguments,
-    getInstructionName: getInstructionName,
     transpileInstrArr: transpileInstrArr
 };
 
