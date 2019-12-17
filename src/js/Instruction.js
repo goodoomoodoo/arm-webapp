@@ -20,6 +20,20 @@ const isImmd = str => {
 }
 
 /**
+ * Return true if the register name exist
+ * @param {String} rName 
+ */
+const isRegister = rName => {
+    for( let i = 0; i < REGISTER_NAME.length; i++ )
+        if( rName == REGISTER_NAME[ i ] )
+            return true;
+    return false
+};
+
+// TODO
+const isNumber = undefined;
+
+/**
  * Check if instruction has label
  * @param {String} instr 
  */
@@ -39,6 +53,33 @@ const hasLabel = instr => {
 const isValidLabel = str => {
     return str.match( /^[a-zA-Z0-9]+$/ );
 };
+
+/**
+ * 
+ * @param {String} iname 
+ * @param {Object} argo 
+ */
+const isValidSyntax = ( iname, argo ) => {
+    let opType = getOpType( iname );
+
+    if( argo.error != undefined )
+        return false;
+
+    if( opType == -1 )
+        return false;
+
+    if( opType == 1 ) {
+
+        if( iname == 'mov' || iname == 'mvn' )
+            return argo.rSrc != undefined;
+        
+        return argo.rSrc != undefined && argo.rSrc2 != undefined;
+    }
+
+    if( opType == 2 ) {
+        return argo.rBase != undefined;
+    }
+}
 
 /**
  * Check if the string is a label
@@ -119,18 +160,20 @@ const getArguments = ( input, index ) => {
     let arr = [];
     let str = "";
 
+
     while( i < input.length ) {
 
         let currChar = input.charAt( i );
 
-        if( currChar === '{' || currChar === '[' ) {
-            // TODO: if you have nested argument
-        }
-        else if( currChar === ',' )
+        if( currChar === ',' )
         {
             // Separate argument and reset str
             arr.push( str );
             str = "";
+
+            // This is added to avoid double counting an argument
+            i++;
+            continue;
         }
         else if( currChar != ' ' )
         {
@@ -143,7 +186,40 @@ const getArguments = ( input, index ) => {
         i++;
     }
 
-    return arr;
+    // destination register
+    let rd = arr[ 0 ];
+
+    let rSrc = arr[ 1 ];
+    let rSrc2 = arr[ 2 ];
+
+    let rBase = undefined;
+    let offset = undefined;
+
+    if( rSrc.charAt( 0 ) == '[' )
+        rBase = rSrc.substring( 1, rSrc.length );
+
+    /**
+     * NOTE: This condition ONLY assumes the syntax with two argument in
+     *       memory block notation
+     */
+    if( rBase != undefined ) {
+        if( rBase.charAt( rBase.length - 1 ) != ']' ) {
+            if( rSrc2 == undefined )
+                return { error: 'Syntax error: \']\' is expected.' };
+            if( rSrc2.charAt( rSrc2.length - 1 ) != ']' )
+                return { error: 'Syntax error: \']\' is expected.' };
+            offset = rSrc2.substring( 0, rSrc2.length - 1 );
+        }else
+            rBase = rBase.substring( 0, rBase.length - 1 );
+    }
+
+    return {
+        rd: rd,
+        rSrc: rSrc,
+        rSrc2: rSrc2,
+        rBase: rBase,
+        offset: offset
+    };
 }
 
 /**
@@ -177,10 +253,16 @@ const getOpType = iname => {
     return -1; // Instruction unfound
 }
 
-const execDataProc = ( opType, iname, argv ) => {
-    let rd = argv[ 0 ];
-    let rSrc = argv.length > 0 ? argv[ 1 ] : undefined;
-    let rSrc2 = argv.length > 1 ? argv[ 2 ] : undefined;
+/**
+ * Perform Data Processing Instructions
+ * @param {int} opType operation type (e.g. Data Processing )
+ * @param {String} iname instruction name
+ * @param {Object} argo Object of register sources
+ */
+const execDataProc = ( opType, iname, argo ) => {
+    let rd = argo.rd;
+    let rSrc = argo.rSrc;
+    let rSrc2 = argo.rSrc2;
     let rVal = undefined;
     let res = undefined;
 
@@ -249,7 +331,11 @@ const execDataProc = ( opType, iname, argv ) => {
                 res = register[ rSrc ] ^ register[ rSrc2 ];
             break;
         default:
-            console.log( 'error: case unfound in Data Processing' );
+            /**
+             * This log most likely wouldn't be reached since getOpType checked
+             * the validity of the instruction
+             */
+            console.log( 'ERROR: Data processing instruction not found.' );
     }
 
     // Perform
@@ -259,20 +345,82 @@ const execDataProc = ( opType, iname, argv ) => {
 }
 
 /**
+ * 
+ * @param {int} opType 
+ * @param {String} iname 
+ * @param {Object} argo 
+ */
+const execMemAcc = ( opType, iname, argo ) => {
+    let rd = argo.rd;
+    let addr = undefined;
+    let rBase = argo.rBase;
+    let offset = argo.offset; // index out of bound returns undefine
+    let offsetVal = undefined;
+    let res = undefined;
+
+    // TODO: check if offset and rBase are valid register
+
+    // TODO: check if the string is convertable to int
+    if( offset != undefined && isImmd( offset ) )
+        offsetVal = parseInt( offset.substring( 1, offset.length ) );
+
+    switch( iname ){
+        case 'ldr':
+            if( offset != undefined ) {
+                if( offsetVal != undefined )
+                    addr = register[ rBase ] + offsetVal;
+                else
+                    addr = register[ rBase ] + register[ offset ];
+            } else {
+                addr = register[ rBase ];
+            }
+
+            if( STACK[ addr ] != undefined ) {
+                res = STACK[ addr ];
+            } else {
+                res = 0;
+            }
+
+            break;
+        case 'str':
+            if( offset != undefined ) {
+                if( offsetVal != undefined )
+                    addr = register[ rBase ] + offsetVal;
+                else
+                    addr = register[ rBase ] + register[ offset ];
+            } else {
+                addr = register[ rBase ];
+            }
+
+            res = register[ rd ];
+            STACK[ addr ] = res;
+
+            break;
+        default:
+            /**
+             * This log most likely wouldn't be reached since getOpType checked
+             * the validity of the instruction
+             */
+            console.log( 'ERROR: Memory accessing instruction not found.')
+    }
+
+    return { opType: opType, register: rd, address: addr, value: res };
+}
+
+/**
  * Execute the instruction with given list of arguments
  * @param {String} iname instruction name
- * @param {Array} argv list of arguments, or arg registers
+ * @param {Object} argo Object of register sources
  */
-const exec = ( iname, argv ) => {
+const exec = ( iname, argo ) => {
 
+    // opType is -1 if instruction isn't found
     let opType = getOpType( iname );
 
     if( opType == 1 )
-        return execDataProc( opType, iname, argv );
-    // else if( opType == 2 )
-    //     return execMemAcc( opType, iname, argv );
-    else
-        return { error: 'Illegal insturction found', instr: iname };
+        return execDataProc( opType, iname, argo );
+    else if( opType == 2 )
+        return execMemAcc( opType, iname, argo );
 }
 
 /**
@@ -283,7 +431,7 @@ const transpileInstrArr = instrArr => {
 
     let objArr = [];
 
-    if( !instrArr )
+    if( instrArr == undefined )
         return 2; // exit code: code unfound
     
     if( instrArr.length == 0 )
@@ -305,20 +453,30 @@ const transpileInstrArr = instrArr => {
             continue;
 
         let iname = getInstructionName( currInstr );
-        let argv = getArguments( currInstr, iname.index );
-        let resObj = exec( iname.name, argv );
+        let argo = getArguments( currInstr, iname.index );
+    
+        if( isValidSyntax( iname.name, argo ) ) {
+            let resObj = exec( iname.name, argo );
 
-        if( resObj.error != undefined )
-            return resObj;
-        else
-            objArr.push( resObj );    
+            if( resObj.error != undefined )
+                return resObj;
+            else
+                objArr.push( resObj );
+
+        } else if( argo.error != undefined )
+            return argo;
+          
     }
 
     return objArr;
 }
 
+// TODO: refractor all labelObj to LABEL
 var labelObj = {};
 
+var STACK = {};
+
+// TODO: refractor all register to REGISTER
 var register = {
     r0: 0,
     r1: 0,
@@ -338,6 +496,11 @@ var register = {
     pc: 0
 }
 
+const REGISTER_NAME = [ 'r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7',
+    'r8', 'r9', 'r10', 'r11', 'r12', 'r13', 'r14', 'r15', 'lr', 'fp', 'ip',
+    'sp', 'pc' ];
+
+// TODO: refractor all instrType to INSTR_TYPE
 const instrType = {
     0: [ 'b', 'beq', 'bl', 'blt', 'ble', 'bgt', 'bge', 'bx'],
     1: [ 'add', 'and', 'asr', 'cmp', 'eor', 'lsl', 'lsr', 'mov', 'mvn', 'mul', 
