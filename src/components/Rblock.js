@@ -8,7 +8,7 @@ class Rblock extends Component {
     constructor( props ) {
         
         super( props );
-
+ 
     }
 
     render() {
@@ -16,7 +16,9 @@ class Rblock extends Component {
             <div className="Rblock">
 
                 <span>{ this.props.rName }</span>
-                <span className="Rblock-val">{ this.props[this.props.rName] }</span>
+                <span className="Rblock-val">
+                    { this.props[ this.props.rName ] }
+                </span>
 
             </div>
         );
@@ -24,7 +26,7 @@ class Rblock extends Component {
 }
 
 const mapStateToProps = state => {
-    return state;
+    return state.register;
 }
 
 export default connect( mapStateToProps )( Rblock );

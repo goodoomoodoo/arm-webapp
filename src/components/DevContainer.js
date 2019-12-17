@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { setRegister } from '../redux/actions/index';
+import { setRegister, procStack } from '../redux/actions/index';
 import Instruction from '../js/Instruction';
 
 import '../styles/DevContainer.css';
@@ -34,6 +34,10 @@ class DevContainer extends Component {
 
         if( obj.opType == 1 )
             this.props.setRegister({ id: obj.register, value: obj.value });
+        else if( obj.opType == 2 ) {
+            this.props.setRegister({ id: obj.register, value: obj.value });
+            this.props.procStack({ addr: obj.address, value: obj.value });
+        }
     }
 
     handleInput( e ) {
@@ -55,6 +59,7 @@ class DevContainer extends Component {
         this.setState({ instrCounter: 0 });
         let objArr = Instruction.transpileInstrArr( instrArr );
         this.setState({ objArr: objArr });
+        console.log( objArr );
     }
 
     handleStep() {
@@ -83,12 +88,13 @@ class DevContainer extends Component {
 
 const mapDispatchToProps = dispatch => {
     return {
-        setRegister: payload => dispatch( setRegister( payload ) )
+        setRegister: payload => dispatch( setRegister( payload ) ),
+        procStack: payload => dispatch( procStack( payload ) )
     }
 };
 
 const mapStateToProps = state => {
-    return state;
+    return state.register;
 }
 
 export default connect( mapStateToProps, mapDispatchToProps )( DevContainer );
