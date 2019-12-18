@@ -13,6 +13,7 @@ class DevContainer extends Component {
         super( props );
 
         this.state = {
+            error: '',
             objArr: null,               // Array of all instruction
             instrCounter: 0             // Instruction index
         };
@@ -57,9 +58,14 @@ class DevContainer extends Component {
         // If all commands work
         // In test environment, assume it all works
         this.setState({ instrCounter: 0 });
-        let objArr = Instruction.transpileInstrArr( instrArr );
-        this.setState({ objArr: objArr });
-        console.log( objArr );
+
+        try {
+            let objArr = Instruction.transpileInstrArr( instrArr );
+            this.setState({ objArr: objArr });
+            console.log( objArr );
+        } catch( error ) {
+            console.log( error.message );
+        }
     }
 
     handleStep() {
