@@ -11,12 +11,14 @@
  * TODO: create documentation
  */
 
+ import { REGISTER_NAME, INSTR_TYPE } from './constants';
+
 /**
  * Check if string represent immediate value
  * @param {String} str 
  */
 const isImmd = str => {
-    return str.charAt( 0 ) == '#';
+    return str.charAt( 0 ) == '#' && isNumber( str.substring( 1, str.length ) );
 }
 
 /**
@@ -30,8 +32,13 @@ const isRegister = rName => {
     return false
 };
 
-// TODO
-const isNumber = undefined;
+/**
+ * Return true if the String consists only digits
+ * @param {String} num 
+ */
+const isNumber = num => {
+    return num.match( /^[0-9]+$/ );
+};
 
 /**
  * Check if instruction has label
@@ -59,25 +66,58 @@ const isValidLabel = str => {
  * @param {String} iname 
  * @param {Object} argo 
  */
-const isValidSyntax = ( iname, argo ) => {
+const checkSyntax = ( iname, argo, line ) => {
     let opType = getOpType( iname );
 
-    if( argo.error != undefined )
-        return false;
-
     if( opType == -1 )
-        return false;
+        throw new Error( `Illegal Instruction: ${iname} at ${line}.`);
 
     if( opType == 1 ) {
 
-        if( iname == 'mov' || iname == 'mvn' )
-            return argo.rSrc != undefined;
-        
-        return argo.rSrc != undefined && argo.rSrc2 != undefined;
+        if( argo.rd == undefined )
+            throw new Error( `Syntax Error: [rd] register not found at 
+                ${line}.` );
+
+        if( argo.rSrc == undefined )
+            throw new Error( `Syntax Error: [rSrc] register not found at 
+                ${line}` );
+
+        if( iname == 'mov' || iname == 'mvn' ) {
+
+            if( !isRegister( argo.rd ) )
+                throw new Error( `Syntax Error: [rd] register expected, but 
+                    received ${argo.rd} at ${line}.` );
+
+            if( !isRegister( argo.rSrc ) && !isImmd( argo.rSrc ) )
+                throw new Error( `Syntax Error: [rSrc] register or immediate value
+                expected, but received ${argo.rSrc} at ${line}.`)
+
+        } else if( !isRegister( argo.rSrc ) )
+            throw new Error( `Syntax Error: [rSrc] register expected, but
+                received ${argo.rSrc} at ${line}.`);
+
+        else if( argo.rSrc2 == undefined )
+            throw new Error( `Syntax Error: third argument required at ${line}.` );
+
+        else if( !isRegister( argo.rSrc2 ) && !isImmd( argo.rSrc2 ) )
+            throw new Error( `Syntax Error: [rSrc2] register or immediate value
+                expected, but received ${argo.rSrc2} at ${line}.` );
     }
 
     if( opType == 2 ) {
-        return argo.rBase != undefined;
+
+        if( argo.rBase == undefined) 
+            throw new Error( `Syntax Error: [rSrc] register not found at 
+                ${line}.` );
+
+        if( !isRegister( argo.rBase ) ) 
+            throw new Error( `Syntax Error: [rSrc] register expected, but 
+                received ${argo.rBase} at ${line}.` );
+
+        if( argo.offset != undefined )
+            if( !isRegister( argo.offset ) && !isImmd( argo.offset ) )
+                throw new Error( `Syntax Error: [offset] register or immediate
+                    value expected, but received ${argo.offset} at ${line}.` );
     }
 }
 
@@ -195,7 +235,7 @@ const getArguments = ( input, index ) => {
     let rBase = undefined;
     let offset = undefined;
 
-    if( rSrc.charAt( 0 ) == '[' )
+    if( rSrc != undefined && rSrc.charAt( 0 ) == '[' )
         rBase = rSrc.substring( 1, rSrc.length );
 
     /**
@@ -204,11 +244,8 @@ const getArguments = ( input, index ) => {
      */
     if( rBase != undefined ) {
         if( rBase.charAt( rBase.length - 1 ) != ']' ) {
-            if( rSrc2 == undefined )
-                return { error: 'Syntax error: \']\' is expected.' };
-            if( rSrc2.charAt( rSrc2.length - 1 ) != ']' )
-                return { error: 'Syntax error: \']\' is expected.' };
-            offset = rSrc2.substring( 0, rSrc2.length - 1 );
+            if( rSrc2 != undefined && rSrc2.charAt( rSrc2.length - 1 ) == ']' )
+                offset = rSrc2.substring( 0, rSrc2.length - 1 );
         }else
             rBase = rBase.substring( 0, rBase.length - 1 );
     }
@@ -229,21 +266,21 @@ const getArguments = ( input, index ) => {
  */
 const getOpType = iname => {
 
-    let dataProcessing = instrType[ 1 ];
+    let dataProcessing = INSTR_TYPE[ 1 ];
 
     for( let i = 0; i < dataProcessing.length; i++ ) {
         if( dataProcessing[ i ] == iname )
             return 1;
     }
 
-    let memoryAccessing = instrType[ 2 ];
+    let memoryAccessing = INSTR_TYPE[ 2 ];
 
     for( let i = 0; i < memoryAccessing.length; i++ ) {
         if( memoryAccessing[ i ] == iname )
             return 2;
     }
 
-    let branch = instrType[ 0 ];
+    let branch = INSTR_TYPE[ 0 ];
 
     for( let i = 0; i < branch.length; i++ ) {
         if( branch[ i ] == iname )
@@ -358,9 +395,6 @@ const execMemAcc = ( opType, iname, argo ) => {
     let offsetVal = undefined;
     let res = undefined;
 
-    // TODO: check if offset and rBase are valid register
-
-    // TODO: check if the string is convertable to int
     if( offset != undefined && isImmd( offset ) )
         offsetVal = parseInt( offset.substring( 1, offset.length ) );
 
@@ -375,8 +409,26 @@ const execMemAcc = ( opType, iname, argo ) => {
                 addr = register[ rBase ];
             }
 
-            if( STACK[ addr ] != undefined ) {
-                res = STACK[ addr ];
+            if( stackObj[ addr ] != undefined ) {
+                res = stackObj[ addr ];
+            } else {
+                res = 0;
+            }
+
+            break;
+        case 'ldrb':
+            if( offset != undefined ) {
+                if( offsetVal != undefined )
+                    addr = register[ rBase ] + offsetVal;
+                else
+                    addr = register[ rBase ] + register[ offset ];
+            } else {
+                addr = register[ rBase ];
+            }
+
+            if( stackObj[ addr ] != undefined ) {
+                res = stackObj[ addr ];
+                res = res & 0xFF;
             } else {
                 res = 0;
             }
@@ -393,7 +445,22 @@ const execMemAcc = ( opType, iname, argo ) => {
             }
 
             res = register[ rd ];
-            STACK[ addr ] = res;
+            stackObj[ addr ] = res;
+
+            break;
+        case 'strb':
+            if( offset != undefined ) {
+                if( offsetVal != undefined )
+                    addr = register[ rBase ] + offsetVal;
+                else
+                    addr = register[ rBase ] + register[ offset ];
+            } else {
+                addr = register[ rBase ];
+            }
+
+            res = register[ rd ];
+            res = res & 0xFF;
+            stackObj[ addr ] = res;
 
             break;
         default:
@@ -433,9 +500,6 @@ const transpileInstrArr = instrArr => {
 
     if( instrArr == undefined )
         return 2; // exit code: code unfound
-    
-    if( instrArr.length == 0 )
-        return 127; // exit code: code not executable
 
     for( let i = 0; i < instrArr.length; i++ ) {
 
@@ -454,27 +518,21 @@ const transpileInstrArr = instrArr => {
 
         let iname = getInstructionName( currInstr );
         let argo = getArguments( currInstr, iname.index );
-    
-        if( isValidSyntax( iname.name, argo ) ) {
-            let resObj = exec( iname.name, argo );
 
-            if( resObj.error != undefined )
-                return resObj;
-            else
-                objArr.push( resObj );
+        checkSyntax( iname.name, argo, i );
 
-        } else if( argo.error != undefined )
-            return argo;
+        let resObj = exec( iname.name, argo );
+
+        objArr.push( resObj );
           
     }
 
     return objArr;
 }
 
-// TODO: refractor all labelObj to LABEL
 var labelObj = {};
 
-var STACK = {};
+var stackObj = {};
 
 // TODO: refractor all register to REGISTER
 var register = {
@@ -495,18 +553,6 @@ var register = {
     sp: 0,
     pc: 0
 }
-
-const REGISTER_NAME = [ 'r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7',
-    'r8', 'r9', 'r10', 'r11', 'r12', 'r13', 'r14', 'r15', 'lr', 'fp', 'ip',
-    'sp', 'pc' ];
-
-// TODO: refractor all instrType to INSTR_TYPE
-const instrType = {
-    0: [ 'b', 'beq', 'bl', 'blt', 'ble', 'bgt', 'bge', 'bx'],
-    1: [ 'add', 'and', 'asr', 'cmp', 'eor', 'lsl', 'lsr', 'mov', 'mvn', 'mul', 
-        'orr', 'sub'],
-    2: [ 'ldr', 'ldrb', 'str', 'strb' ]
-};
 
 const Instruction = {
     transpileInstrArr: transpileInstrArr
