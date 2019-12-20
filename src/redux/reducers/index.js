@@ -2,6 +2,7 @@ import { SET_REGISTER, PROC_STACK } from '../constants';
 
 const initialState = {
   register: {
+    r0: 0,
     r1: 0,
     r2: 0,
     r3: 0,
