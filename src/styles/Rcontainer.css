@@ -1,0 +1,24 @@
+.Rcontainer {
+    position: relative;
+    width: 95%;
+    margin: auto;
+}
+
+.Rcontrol {
+    position: relative;
+    width: 100%;
+    border-bottom: 1px solid #ccc;
+}
+
+.Rcontrol button {
+    background: white;
+    border: none;
+    font-size: 1.375em;
+    color: #555;
+    padding: .5em;
+    margin-right: .5em;
+}
+
+.Rcontrol button:hover {
+    background: #eee;
+}
