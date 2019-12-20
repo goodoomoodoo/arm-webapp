@@ -15,10 +15,10 @@ class Rblock extends Component {
         return (
             <div className="Rblock">
 
-                <span>{ this.props.rName }</span>
-                <span className="Rblock-val">
+                <div>{ this.props.rName }</div>
+                <div className="Rblock-val">
                     { this.props[ this.props.rName ] }
-                </span>
+                </div>
 
             </div>
         );

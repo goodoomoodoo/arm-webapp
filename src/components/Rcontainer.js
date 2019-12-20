@@ -8,6 +8,12 @@ class Rcontainer extends Component {
     render() {
         return (
             <div className="Rcontainer">
+                <div className="Rcontrol">
+                    <button>Decimal</button>
+                    <button>Binary</button>
+                    <button>Hexidecimal</button>
+                </div>
+                <Rblock rName="r0" />
                 <Rblock rName="r1" />
                 <Rblock rName="r2" />
                 <Rblock rName="r3" />

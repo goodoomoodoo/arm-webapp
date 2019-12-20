@@ -11,9 +11,11 @@ class Home extends Component {
     render() {
         return (
             <div className="Home">
-                <Rcontainer />
                 <DevContainer />
-                <Stack />
+                <div>
+                    <Rcontainer />
+                    <Stack />
+                </div>
             </div>
         );
     }

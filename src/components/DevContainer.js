@@ -52,19 +52,19 @@ class DevContainer extends Component {
 
         let instrArr = this.state.instructions.split( '\n' );
 
-        // TODO: check if all commands are valid
-        // This step is probably gonna be done over a server
-
-        // If all commands work
-        // In test environment, assume it all works
         this.setState({ instrCounter: 0 });
 
-        try {
-            let objArr = Instruction.transpileInstrArr( instrArr );
+ 
+        let resObj = Instruction.transpileInstrArr( instrArr );
+
+        if( resObj.exitCode == 0 ) {
+            let objArr = Instruction.debugInstrArr( instrArr );
             this.setState({ objArr: objArr });
             console.log( objArr );
-        } catch( error ) {
-            console.log( error.message );
+        } else {
+            console.log( 'Program exited ', resObj.exitCode );
+            for( let i = 0; i < resObj.msgArr.length; i++ )
+                console.log( resObj.msgArr[ i ] );
         }
     }
 
@@ -83,10 +83,12 @@ class DevContainer extends Component {
             <div className="DevContainer">
                 <textarea name="instructions" onChange={this.handleInput} 
                     value={this.state.instructions} />
-                <button onClick={this.handleRun}>Run</button>
-                <button onClick={this.handleStep}>Step</button>
-                <button>Next</button>
-                <button>Finish</button>
+                <div className="DevActions">
+                    <button onClick={this.handleRun}>Run</button>
+                    <button onClick={this.handleStep}>Step</button>
+                    <button>Next</button>
+                    <button>Finish</button>
+                </div>
             </div>
         );
     }
