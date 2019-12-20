@@ -41,6 +41,14 @@ const isNumber = num => {
 };
 
 /**
+ * Check if the string is a label
+ * @param {String} str 
+ */
+const isLabel = str => {
+    return str.charAt( str.length - 1 ) == ':';
+}
+
+/**
  * Check if instruction has label
  * @param {String} instr 
  */
@@ -58,7 +66,7 @@ const hasLabel = instr => {
  * @param {String} str label
  */
 const isValidLabel = str => {
-    return str.match( /^[a-zA-Z0-9]+$/ );
+    return str.match( /^[a-zA-Z0-9]+:$/ );
 };
 
 /**
@@ -66,11 +74,17 @@ const isValidLabel = str => {
  * @param {String} iname 
  * @param {Object} argo 
  */
-const checkSyntax = ( iname, argo, line ) => {
-    let opType = getOpType( iname );
+const checkSyntax = ( opType, iname, argo, line ) => {
 
     if( opType == -1 )
         throw new Error( `Illegal Instruction: ${iname} at ${line}.`);
+
+    if( opType == 0 ) {
+        
+        if( labelObj[ argo.label ] == undefined )
+            throw new Error( `Syntax Error: label ${argo.label} not found.` );
+
+    }
 
     if( opType == 1 ) {
 
@@ -82,7 +96,7 @@ const checkSyntax = ( iname, argo, line ) => {
             throw new Error( `Syntax Error: [rSrc] register not found at 
                 ${line}` );
 
-        if( iname == 'mov' || iname == 'mvn' ) {
+        if( iname == 'mov' || iname == 'mvn' || iname == 'cmp' ) {
 
             if( !isRegister( argo.rd ) )
                 throw new Error( `Syntax Error: [rd] register expected, but 
@@ -122,17 +136,6 @@ const checkSyntax = ( iname, argo, line ) => {
 }
 
 /**
- * Check if the string is a label
- * @param {String} str 
- */
-const isLabel = str => {
-    return str.charAt( str.length - 1 ) == ':';
-}
-
-// TODO: store label name and label position
-const markLabel = undefined;
-
-/**
  * Returns the first word of an instruction
  * @param {String} instr 
  */
@@ -144,8 +147,8 @@ const getFirstWord = instr => {
     let i = 0;
     let str = "";
 
-    while( instr.charAt( i ) != ' ' && i < instr.length ) {
-        str.concat( instr.charAt( i ) );
+    while( i < instr.length && instr.charAt( i ) != ' ' ) {
+        str = str.concat( instr.charAt( i ) );
         i++;
     }
 
@@ -180,10 +183,8 @@ const getInstructionName = ( input ) => {
         }
     }
 
-    str.toLowerCase();
-
     return ({
-        name: str,
+        name: str.toLowerCase(),
         index: i
     });
 }
@@ -194,7 +195,7 @@ const getInstructionName = ( input ) => {
  * @param {int} index start of the instruction
  * @return {string array} array of arguments
  */
-const getArguments = ( input, index ) => {
+const getArguments = ( opType, input, index ) => {
 
     let i = index;
     let arr = [];
@@ -226,37 +227,68 @@ const getArguments = ( input, index ) => {
         i++;
     }
 
-    // destination register
-    let rd = arr[ 0 ];
+    if( opType == 0 ) {
 
-    let rSrc = arr[ 1 ];
-    let rSrc2 = arr[ 2 ];
-
-    let rBase = undefined;
-    let offset = undefined;
-
-    if( rSrc != undefined && rSrc.charAt( 0 ) == '[' )
-        rBase = rSrc.substring( 1, rSrc.length );
-
-    /**
-     * NOTE: This condition ONLY assumes the syntax with two argument in
-     *       memory block notation
-     */
-    if( rBase != undefined ) {
-        if( rBase.charAt( rBase.length - 1 ) != ']' ) {
-            if( rSrc2 != undefined && rSrc2.charAt( rSrc2.length - 1 ) == ']' )
-                offset = rSrc2.substring( 0, rSrc2.length - 1 );
-        }else
-            rBase = rBase.substring( 0, rBase.length - 1 );
+        if( arr.length > 1 )
+            throw new Error( 'Syntax error: only 1 argument expected.' );
+        
+        return {
+            label: arr[ 0 ]
+        };
     }
 
-    return {
-        rd: rd,
-        rSrc: rSrc,
-        rSrc2: rSrc2,
-        rBase: rBase,
-        offset: offset
-    };
+    if( opType == 1 ) {
+
+        let rd = arr[ 0 ] == undefined ? undefined : arr[ 0 ].toLowerCase();
+        let rSrc = arr[ 1 ] == undefined ? undefined : arr[ 1 ].toLowerCase();
+        let rSrc2 = arr[ 2 ] == undefined ? undefined : arr[ 2 ].toLowerCase();
+
+        return {
+            rd: rd,
+            rSrc: rSrc,
+            rSrc2: rSrc2
+        };
+    }
+
+    if( opType == 2 ) {
+
+        let rd = arr[ 0 ] == undefined ? undefined : arr[ 0 ].toLowerCase();
+        let rBase = arr[ 1 ] == undefined ? undefined : arr[ 1 ].toLowerCase();
+        let offset = arr[ 2 ] == undefined ? undefined : arr[ 2 ].toLowerCase();
+
+        if( arr[ 3 ] != undefined )
+            throw new Error( 'Syntax error: 2 arguments expected, but received 3.' );
+
+        if( rBase != undefined ) {
+
+            if( rBase.charAt( 0 ) == '[' ) {
+
+                rBase = rBase.substring( 1, rBase.length );
+
+                if( rBase.charAt( rBase.length - 1 ) == ']' )
+                    return {
+                        rd: rd,
+                        rBase: rBase.substring( 0, rBase.length - 1 )
+                    };
+                else if( offset != undefined && 
+                    offset.charAt( offset.length - 1 ) == ']' )
+                    return {
+                        rd: rd,
+                        rBase: rBase,
+                        offset: offset.substring( 0, offset.length - 1 )
+                    };
+
+                throw new Error( 'Syntax error: \']\' is expected.');
+            }
+        } else {
+            return {
+                rd: rd
+            };
+        }
+        
+    }
+
+    return {};
 }
 
 /**
@@ -288,6 +320,45 @@ const getOpType = iname => {
     }
 
     return -1; // Instruction unfound
+}
+
+/**
+ * 
+ * @param {int} opType 
+ * @param {String} iname 
+ * @param {Object} argo 
+ */
+const execBranch = ( opType, iname, argo ) => {
+    let pc = labelObj[ argo.label ];
+    let cond = false;
+
+    switch( iname ) {
+        case 'b':
+            cond = true;
+            break;
+        case 'beq':
+            cond = cmpState == 0;
+            break;
+        case 'bne':
+            cond = cmpState != 0;
+            break;
+        case 'ble':
+            cond = cmpState <= 0;
+            break;
+        case 'blt':
+            cond = cmpState < 0;
+            break;
+        case 'bge':
+            cond = cmpState >= 0;
+            break;
+        case 'bgt':
+            cond = cmpState > 0;
+            break;
+        default:
+            console.log( 'ERROR' );
+    }
+
+    return { opType: opType, pc: pc, cond: cond };
 }
 
 /**
@@ -330,6 +401,14 @@ const execDataProc = ( opType, iname, argo ) => {
                 res = register[ rSrc ] - rVal;
             else
                 res = register[ rSrc ] - register[ rSrc2 ];
+            break;
+        case 'cmp':
+            if( isImmd( rSrc ) )
+                cmpState = register[ rd ] - parseInt( rSrc.substring( 1, rSrc.length ), 10 );
+            else
+                cmpState = register[ rd ] - register[ rSrc ];
+            
+            res = cmpState;
             break;
         case 'and':
             if( isImmd( rSrc2 ) )
@@ -488,28 +567,37 @@ const exec = ( iname, argo ) => {
         return execDataProc( opType, iname, argo );
     else if( opType == 2 )
         return execMemAcc( opType, iname, argo );
+    else if( opType == 0 )
+        return execBranch( opType, iname, argo );
 }
 
 /**
- * Transpile the String instructions into Array of Objects
- * @param {Array} instrArr list of instruction lines
+ * 
+ * @param {Array} instrArr 
  */
 const transpileInstrArr = instrArr => {
 
-    let objArr = [];
+    let exitCode = 0;
+
+    let msgArr = [];
 
     if( instrArr == undefined )
-        return 2; // exit code: code unfound
+        exitCode = 2;
 
-    for( let i = 0; i < instrArr.length; i++ ) {
-
+    for( let i = 0; i < instrArr.length; i ++ ) {
         let currInstr = instrArr[ i ];
         if( hasLabel( currInstr ) ) {
             let label = getFirstWord( currInstr );
             let labelName = label.name.substring( 0, label.name.length - 1 );
+
             labelObj[ labelName ] = i;
-            currInstr = currInstr.substring( label.index, currInstr.length );
+            instrArr[ i ] = currInstr.substring( label.index + 1, currInstr.length );  
         }
+    }
+
+    for( let i = 0; i < instrArr.length; i++ ) {
+
+        let currInstr = instrArr[ i ];
 
         // If the current Instruction is only consists of spaces and tabs,
         // continue to the next Instruction.
@@ -517,14 +605,70 @@ const transpileInstrArr = instrArr => {
             continue;
 
         let iname = getInstructionName( currInstr );
-        let argo = getArguments( currInstr, iname.index );
+        let opType = getOpType( iname.name );
+        let argo = getArguments( opType, currInstr, iname.index );
 
-        checkSyntax( iname.name, argo, i );
+        try {
+            checkSyntax( opType, iname.name, argo, i );
+        } catch( error ) {
+            msgArr.push( error.message );
+            exitCode = 1;
+        }
+    }
+
+    if( msgArr.length == 0 )
+        return { 
+            exitCode: exitCode, 
+            msgArr: [ "Transpile completed. Success." ] 
+        };
+    
+    return { 
+        exitCode: exitCode, 
+        msgArr: msgArr 
+    };
+}
+
+/**
+ * Transpile the String instructions into Array of Objects
+ * @param {Array} instrArr list of instruction lines
+ */
+const debugInstrArr = instrArr => {
+
+    let objArr = [];
+
+    for( let i = 0; i < instrArr.length; i ++ ) {
+        let currInstr = instrArr[ i ];
+        if( hasLabel( currInstr ) ) {
+            let label = getFirstWord( currInstr );
+            let labelName = label.name.substring( 0, label.name.length - 1 );
+
+            labelObj[ labelName ] = i;
+            instrArr[ i ] = currInstr.substring( label.index + 1, currInstr.length );  
+        }
+    }
+
+    for( let i = 0; i < instrArr.length; i++ ) {
+
+        let currInstr = instrArr[ i ];
+
+        // If the current Instruction is only consists of spaces and tabs,
+        // continue to the next Instruction.
+        if( currInstr.trim().length == 0 )
+            continue;
+
+        let iname = getInstructionName( currInstr );
+        let opType = getOpType( iname.name );
+        let argo = getArguments( opType, currInstr, iname.index );
 
         let resObj = exec( iname.name, argo );
 
-        objArr.push( resObj );
-          
+        /* Perform Jump */
+        if( opType == 0 ) {
+            if( resObj.cond )
+                i = resObj.pc - 1;
+        }
+
+        objArr.push( resObj );      
     }
 
     return objArr;
@@ -534,7 +678,6 @@ var labelObj = {};
 
 var stackObj = {};
 
-// TODO: refractor all register to REGISTER
 var register = {
     r0: 0,
     r1: 0,
@@ -552,10 +695,13 @@ var register = {
     ip: 0,
     sp: 0,
     pc: 0
-}
+};
+
+var cmpState = 0;
 
 const Instruction = {
-    transpileInstrArr: transpileInstrArr
+    transpileInstrArr: transpileInstrArr,
+    debugInstrArr: debugInstrArr
 };
 
 export default Instruction;
