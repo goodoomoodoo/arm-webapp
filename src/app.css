@@ -17,6 +17,6 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #555;
+  background: #ccc;
   opacity: .7;
 }

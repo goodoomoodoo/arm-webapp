@@ -14,6 +14,8 @@ class DevContainer extends Component {
 
         this.state = {
             error: '',
+            instruction: "",
+            line: 1,
             objArr: null,               // Array of all instruction
             instrCounter: 0             // Instruction index
         };
@@ -24,12 +26,16 @@ class DevContainer extends Component {
         this.executeInstr = this.executeInstr.bind( this );
     }
 
-    /**
-     * 
-     * @param {String} instrName name of the instruction
-     * @param {Array} argv list of arguments
-     */
-    executeInstr( ) {
+    createLineNumber = ( count ) => {
+        let arr = [];
+
+        for( let i = 0; i < count; i++ )
+            arr.push( <span key={i}>{i + 1}</span> );
+
+        return arr;
+    }
+
+    executeInstr() {
 
         let obj = this.state.objArr[ this.state.instrCounter ];
 
@@ -45,12 +51,19 @@ class DevContainer extends Component {
         this.setState({
             [e.target.name]: e.target.value
         });
+
+        let ta = document.querySelector( 'textarea' );
+        ta.style.cssText = 'height: calc( 100% - 6px );';
+        ta.style.cssText = 'height: ' + ta.scrollHeight + 'px';
+
+        let lineCount = e.target.value.split( '\n' ).length;
+        this.setState({ line: lineCount });
     }
 
     handleRun( e ) {
         e.preventDefault();
 
-        let instrArr = this.state.instructions.split( '\n' );
+        let instrArr = this.state.instruction.split( '\n' );
 
         this.setState({ instrCounter: 0 });
 
@@ -81,8 +94,15 @@ class DevContainer extends Component {
     render() {
         return (
             <div className="DevContainer">
-                <textarea name="instructions" onChange={this.handleInput} 
-                    value={this.state.instructions} />
+                <div className="DevEditor">
+                    <div className="DevLineNumber">
+                        {this.createLineNumber( this.state.line )}
+                    </div>
+                    <textarea name="instruction" 
+                        value={this.state.instruction}
+                        onChange={this.handleInput}
+                    ></textarea>
+                </div>
                 <div className="DevActions">
                     <button onClick={this.handleRun}>Run</button>
                     <button onClick={this.handleStep}>Step</button>

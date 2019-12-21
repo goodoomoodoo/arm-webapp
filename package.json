@@ -2,7 +2,12 @@
   "name": "arm-webapp",
   "description": "ARM online interface",
   "version": "0.0.1",
-  "keywords": [ "ARM", "Javascript", "Reactjs", "Redux" ],
+  "keywords": [
+    "ARM",
+    "Javascript",
+    "Reactjs",
+    "Redux"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/goodoomoodoo/arm-webapp.git"
