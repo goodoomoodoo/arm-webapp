@@ -1,6 +1,6 @@
 .Rblock{
     position: relative;
-    width: 5em;
+    min-width: 5em;
     display: inline-grid;
     grid-template-columns: auto;
     grid-template-rows: 1fr 1fr;

@@ -12,13 +12,29 @@
 
 .Rcontrol button {
     background: white;
-    border: none;
     font-size: 1.375em;
-    color: #555;
     padding: .5em;
-    margin-right: .5em;
+    padding-right: .75em;
+    padding-left: .75em;
+    margin-left: 2px;
+    outline: none;
 }
 
 .Rcontrol button:hover {
-    background: #eee;
+    background: #f5f5f5;
+}
+
+.Rcontrol button:active {
+    background: #e0e0e0;
+}
+
+.unselected {
+    border: none;
+    color: #555;
+}
+
+.selected {
+    border: none;
+    box-shadow: 0 -2px 3px #aaa;
+    color: rgb(15, 180, 111);
 }
