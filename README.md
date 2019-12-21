@@ -94,3 +94,5 @@ js dir
 ## Built With
 
 **__REACT__** that's what you need to know mostly
+
+[![Netlify Status](https://api.netlify.com/api/v1/badges/95af172f-729a-4f2d-acdb-9f643196ebc2/deploy-status)](https://app.netlify.com/sites/naughty-wing-4b1b2f/deploys)
