@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { setRegister, procStack } from '../redux/actions/index';
-import Instruction from '../js/Instruction';
+import { setRegister, procStack } from '../../redux/actions/index';
+import Instruction from '../../js/Instruction';
 
-import '../styles/DevContainer.css';
+import '../../styles/DevContainer.css';
 
 class DevContainer extends Component {
 
@@ -20,9 +20,10 @@ class DevContainer extends Component {
             instrCounter: 0             // Instruction index
         };
 
-        this.handleInput = this.handleInput.bind( this );
-        this.handleRun   = this.handleRun.bind( this );
-        this.handleStep  = this.handleStep.bind( this );
+        this.handleInput  = this.handleInput.bind( this );
+        this.handleTab    = this.handleTab.bind( this );
+        this.handleRun    = this.handleRun.bind( this );
+        this.handleStep   = this.handleStep.bind( this );
         this.executeInstr = this.executeInstr.bind( this );
     }
 
@@ -47,7 +48,16 @@ class DevContainer extends Component {
         }
     }
 
+    handleTab( e ) {        
+        if( e.keyCode == 9 ) {
+            e.preventDefault();
+            this.setState({ instruction: this.state.instruction + '\t' });
+        }
+    }
+
     handleInput( e ) {
+        e.preventDefault();
+
         this.setState({
             [e.target.name]: e.target.value
         });
@@ -94,6 +104,12 @@ class DevContainer extends Component {
     render() {
         return (
             <div className="DevContainer">
+                <div className="DevActions">
+                    <button onClick={this.handleRun}>Run</button>
+                    <button onClick={this.handleStep}>Step</button>
+                    <button>Next</button>
+                    <button>Finish</button>
+                </div>
                 <div className="DevEditor">
                     <div className="DevLineNumber">
                         {this.createLineNumber( this.state.line )}
@@ -101,13 +117,8 @@ class DevContainer extends Component {
                     <textarea name="instruction" 
                         value={this.state.instruction}
                         onChange={this.handleInput}
+                        onKeyDown={this.handleTab}
                     ></textarea>
-                </div>
-                <div className="DevActions">
-                    <button onClick={this.handleRun}>Run</button>
-                    <button onClick={this.handleStep}>Step</button>
-                    <button>Next</button>
-                    <button>Finish</button>
                 </div>
             </div>
         );

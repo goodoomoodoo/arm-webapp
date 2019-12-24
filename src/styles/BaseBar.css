@@ -1,23 +1,10 @@
-.Rcontainer {
-    position: relative;
-    width: 90%;
-    margin: auto;
-    margin-left: 2.5em;
-}
-
-.Rcontainer h1 {
-    font-weight: normal;
-    margin-left: .25em;
-    color: #222;
-}
-
-.Rcontrol {
+.BaseBar {
     position: relative;
     width: 100%;
     border-bottom: 1px solid #ccc;
 }
 
-.Rcontrol button {
+.BaseBar button {
     background: white;
     font-size: 1em;
     padding: .5em;
@@ -26,11 +13,11 @@
     margin-left: 2px;
 }
 
-.Rcontrol button:hover {
+.BaseBar button:hover {
     background: #f5f5f5;
 }
 
-.Rcontrol button:active {
+.BaseBar button:active {
     background: #e0e0e0;
 }
 

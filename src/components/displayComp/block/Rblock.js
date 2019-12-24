@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import '../styles/Rblock.css';
+import '../../../styles/Rblock.css';
 
 class Rblock extends Component {
 
@@ -24,7 +24,6 @@ class Rblock extends Component {
                         (this.props[ this.props.rName ] >>> 0).toString( 2 ) 
                     }
                 </div>
-
             </div>
         );
     }

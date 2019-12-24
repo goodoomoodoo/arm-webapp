@@ -601,7 +601,8 @@ const transpileInstrArr = instrArr => {
 
         // If the current Instruction is only consists of spaces and tabs,
         // continue to the next Instruction.
-        if( currInstr.trim().length == 0 )
+        currInstr = currInstr.trim();
+        if( currInstr.length == 0 )
             continue;
 
         let iname = getInstructionName( currInstr );
@@ -653,7 +654,8 @@ const debugInstrArr = instrArr => {
 
         // If the current Instruction is only consists of spaces and tabs,
         // continue to the next Instruction.
-        if( currInstr.trim().length == 0 )
+        currInstr = currInstr.trim();
+        if( currInstr.length == 0 )
             continue;
 
         let iname = getInstructionName( currInstr );

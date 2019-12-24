@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 
-import Rcontainer from './Rcontainer';
-import DevContainer from './DevContainer';
-import Stack from './Stack';
+import Rcontainer from './displayComp/Rcontainer';
+import DevContainer from './devComp/DevContainer';
+import Stack from './displayComp/Stack';
 
 import '../styles/Home.css';
 
