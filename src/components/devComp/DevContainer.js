@@ -40,12 +40,37 @@ class DevContainer extends Component {
 
         let obj = this.state.objArr[ this.state.instrCounter ];
 
-        if( obj.opType == 1 )
+        if( obj.opType == 1 ) {
+
             this.props.setRegister({ id: obj.register, value: obj.value });
-        else if( obj.opType == 2 ) {
+
+        } else if( obj.opType == 2 ) {
+
             this.props.setRegister({ id: obj.register, value: obj.value });
             this.props.procStack({ addr: obj.address, value: obj.value });
+
+        } else if( obj.opType == 3 ) {
+            
+            let i = 0;
+            for( ; i < obj.actions.length - 1 ; i++ ) {
+
+                this.props.setRegister({ 
+                    id: obj.actions[ i ].register, 
+                    value: obj.actions[ i ].value 
+                });
+                this.props.procStack({ 
+                    addr: obj.actions[ i ].address, 
+                    value: obj.actions[ i ].value
+                });
+            }
+
+            this.props.setRegister({ 
+                id: obj.actions[ i ].register,
+                value: obj.actions[ i ].value
+            });
         }
+
+        this.props.setRegister({ id: 'pc', value: this.props.pc + 4 });
     }
 
     handleTab( e ) {        

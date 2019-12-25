@@ -4,8 +4,9 @@ export const REGISTER_NAME = [ 'r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7',
 
 
 export const INSTR_TYPE = {
-    0: [ 'b', 'beq', 'bne', 'bl', 'blt', 'ble', 'bgt', 'bge', 'bx'],
+    0: [ 'b', 'beq', 'bne', 'bl', 'blt', 'ble', 'bgt', 'bge' ],
     1: [ 'add', 'and', 'asr', 'cmp', 'eor', 'lsl', 'lsr', 'mov', 'mvn', 'mul', 
         'orr', 'sub'],
-    2: [ 'ldr', 'ldrb', 'str', 'strb' ]
+    2: [ 'ldr', 'ldrb', 'str', 'strb' ],
+    3: [ 'push', 'pop' ]
 }; 

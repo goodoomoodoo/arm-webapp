@@ -15,9 +15,9 @@ const initialState = {
     r10: 0,
     fp: 0,
     ip: 0,
-    sp: 0,
+    sp: 0x4000,
     lr: 0,
-    pc: 0
+    pc: 0x8000
   },
   memory: { stack: { } }
 }

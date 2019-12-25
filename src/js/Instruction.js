@@ -37,7 +37,7 @@ const isRegister = rName => {
  * @param {String} num 
  */
 const isNumber = num => {
-    return num.match( /^[0-9]+$/ );
+    return num.match( /^-?\d+$/ );
 };
 
 /**
@@ -100,22 +100,23 @@ const checkSyntax = ( opType, iname, argo, line ) => {
 
             if( !isRegister( argo.rd ) )
                 throw new Error( `Syntax Error: [rd] register expected, but 
-                    received ${argo.rd} at ${line}.` );
+                    received ${argo.rd} at line ${line}.` );
 
             if( !isRegister( argo.rSrc ) && !isImmd( argo.rSrc ) )
-                throw new Error( `Syntax Error: [rSrc] register or immediate value
-                expected, but received ${argo.rSrc} at ${line}.`)
+                throw new Error( `Syntax Error: [rSrc] register or immediate 
+                value expected, but received ${argo.rSrc} at line ${line}.`);
 
         } else if( !isRegister( argo.rSrc ) )
             throw new Error( `Syntax Error: [rSrc] register expected, but
-                received ${argo.rSrc} at ${line}.`);
+                received ${argo.rSrc} at line ${line}.`);
 
         else if( argo.rSrc2 == undefined )
-            throw new Error( `Syntax Error: third argument required at ${line}.` );
+            throw new Error( `Syntax Error: third argument required at line 
+                ${line}.` );
 
         else if( !isRegister( argo.rSrc2 ) && !isImmd( argo.rSrc2 ) )
             throw new Error( `Syntax Error: [rSrc2] register or immediate value
-                expected, but received ${argo.rSrc2} at ${line}.` );
+                expected, but received ${argo.rSrc2} at line ${line}.` );
     }
 
     if( opType == 2 ) {
@@ -126,12 +127,23 @@ const checkSyntax = ( opType, iname, argo, line ) => {
 
         if( !isRegister( argo.rBase ) ) 
             throw new Error( `Syntax Error: [rSrc] register expected, but 
-                received ${argo.rBase} at ${line}.` );
+                received ${argo.rBase} at line ${line}.` );
 
         if( argo.offset != undefined )
             if( !isRegister( argo.offset ) && !isImmd( argo.offset ) )
                 throw new Error( `Syntax Error: [offset] register or immediate
-                    value expected, but received ${argo.offset} at ${line}.` );
+                    value expected, but received ${argo.offset} at line
+                     ${line}.` );
+    }
+
+    if( opType == 3 ) {
+
+        for( let i = 0; i < argo.rArr.length; i++ ) {
+
+            if( !isRegister( argo.rArr[ i ] ) )
+                throw new Error( `Syntax Error: register expected, but received
+                    ${argo.rArr[ i ]} at line ${line}.` );
+        }
     }
 }
 
@@ -257,7 +269,8 @@ const getArguments = ( opType, input, index ) => {
         let offset = arr[ 2 ] == undefined ? undefined : arr[ 2 ].toLowerCase();
 
         if( arr[ 3 ] != undefined )
-            throw new Error( 'Syntax error: 2 arguments expected, but received 3.' );
+            throw new Error( `Syntax error: 2 arguments expected, but 
+                received 3.` );
 
         if( rBase != undefined ) {
 
@@ -286,6 +299,41 @@ const getArguments = ( opType, input, index ) => {
             };
         }
         
+    }
+
+    if( opType == 3 ) {
+
+        let firstArg = arr[ 0 ];
+        let lastArg = arr[ arr.length - 1 ];
+
+        if( firstArg.charAt( 0 ) == '{' ) {
+            
+            // All registers are length 2, meaning the third char has to be } to
+            // close the parameter
+            if( lastArg.charAt( lastArg.length - 1 ) == '}' ) {
+
+                let res = [];
+                
+                arr[ 0 ] = firstArg.substring( 1, firstArg.length );
+                arr[ arr.length - 1 ] = lastArg.substring( 0, 
+                    lastArg.length - 1 );
+
+                for( let i = 0; i < arr.length; i++ ) {
+
+                    res.push( arr[ i ] );
+                }
+
+                return {
+                    rArr: res
+                };
+
+            } else {
+                throw new Error( `Syntax error: } expected at the end of the 
+                    line.` );
+            }
+        }
+    } else {
+        throw new Error( `Syntax error: { expected at the start of the line.` );
     }
 
     return {};
@@ -317,6 +365,13 @@ const getOpType = iname => {
     for( let i = 0; i < branch.length; i++ ) {
         if( branch[ i ] == iname )
             return 0;
+    }
+
+    let comb = INSTR_TYPE[ 3 ];
+
+    for( let i = 0; i < comb.length; i++ ) {
+        if( comb[ i ] == iname )
+            return 3;
     }
 
     return -1; // Instruction unfound
@@ -404,7 +459,8 @@ const execDataProc = ( opType, iname, argo ) => {
             break;
         case 'cmp':
             if( isImmd( rSrc ) )
-                cmpState = register[ rd ] - parseInt( rSrc.substring( 1, rSrc.length ), 10 );
+                cmpState = register[ rd ] - parseInt( 
+                    rSrc.substring( 1, rSrc.length ), 10 );
             else
                 cmpState = register[ rd ] - register[ rSrc ];
             
@@ -553,6 +609,56 @@ const execMemAcc = ( opType, iname, argo ) => {
     return { opType: opType, register: rd, address: addr, value: res };
 }
 
+const execComb = ( opType, iname, argo ) => {
+
+    let res = [];
+    
+    switch( iname ) {
+        case 'push':
+            for( let i = 0; i < argo.rArr.length; i++ ) {
+
+                let memoryAccessingObj = execMemAcc( 2, 'str', {
+                    rd: argo.rArr[ i ],
+                    rBase: 'sp',
+                    offset: '#-4'
+                });
+
+                let dataProcessingObj = execDataProc( 1, 'sub', {
+                    rd: 'sp',
+                    rSrc: 'sp',
+                    rSrc2: '#4'
+                });
+
+                res.push( memoryAccessingObj );
+                
+                if( i == argo.rArr.length - 1 )
+                    res.push( dataProcessingObj );
+            }
+            break;
+        case 'pop':
+            for( let i = 0; i < argo.rArr.length; i++ ) {
+
+                let memoryAccessingObj = execMemAcc( 2, 'ldr', {
+                    rd: argo.rArr[ i ],
+                    rBase: 'sp'
+                });
+
+                let dataProcessingObj = execDataProc( 1, 'add', {
+                    rd: 'sp',
+                    rSrc: 'sp',
+                    rSrc2: '#4'
+                });
+
+                res.push( memoryAccessingObj );
+                
+                if( i == argo.rArr.length - 1 )
+                    res.push( dataProcessingObj );
+            }
+    }
+
+    return { opType: opType, actions: res };
+}
+
 /**
  * Execute the instruction with given list of arguments
  * @param {String} iname instruction name
@@ -569,6 +675,8 @@ const exec = ( iname, argo ) => {
         return execMemAcc( opType, iname, argo );
     else if( opType == 0 )
         return execBranch( opType, iname, argo );
+    else if( opType == 3 )
+        return execComb( opType, iname, argo );
 }
 
 /**
@@ -591,7 +699,8 @@ const transpileInstrArr = instrArr => {
             let labelName = label.name.substring( 0, label.name.length - 1 );
 
             labelObj[ labelName ] = i;
-            instrArr[ i ] = currInstr.substring( label.index + 1, currInstr.length );  
+            instrArr[ i ] = currInstr.substring( label.index + 1, 
+                currInstr.length );  
         }
     }
 
@@ -644,7 +753,8 @@ const debugInstrArr = instrArr => {
             let labelName = label.name.substring( 0, label.name.length - 1 );
 
             labelObj[ labelName ] = i;
-            instrArr[ i ] = currInstr.substring( label.index + 1, currInstr.length );  
+            instrArr[ i ] = currInstr.substring( label.index + 1, 
+                currInstr.length );  
         }
     }
 
@@ -695,8 +805,8 @@ var register = {
     lr: 0,
     fp: 0,
     ip: 0,
-    sp: 0,
-    pc: 0
+    sp: 0x4000,
+    pc: 0x8000
 };
 
 var cmpState = 0;

@@ -30,7 +30,8 @@ class Stack extends Component {
                 <BaseBar setParentProps={this.setBase} />
                 {
                     Object.keys( this.props.stack ).map( ( keys, index ) => {
-                        return ( <Mblock addr={ keys }  key={index}
+                        return ( <Mblock addr={ keys } base={this.state.base} 
+                            key={index}
                             value={ this.props.stack[ keys ] } /> );
                     })
                 }

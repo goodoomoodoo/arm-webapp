@@ -7,7 +7,7 @@ class Mblock extends Component {
         return (
              <div className="Rblock">
 
-                <div>{ this.props.addr }</div>
+                <div>{ this.props.addr.toString( 16 ) }</div>
                 <div className="Rblock-val">
                     { 
                         this.props.base === 'Decimal' &&
