@@ -12,6 +12,8 @@
  */
 
  import { REGISTER_NAME, INSTR_TYPE } from './constants';
+ import store from "../redux/store/index";
+import { setRegister, procStack } from '../redux/actions';
 
 /**
  * Check if string represent immediate value
@@ -383,8 +385,8 @@ const getOpType = iname => {
  * @param {String} iname 
  * @param {Object} argo 
  */
-const execBranch = ( opType, iname, argo ) => {
-    let pc = labelObj[ argo.label ];
+const execBranch = ( iname, argo ) => {
+    let jumpAddr = labelObj[ argo.label ];
     let cond = false;
 
     switch( iname ) {
@@ -413,7 +415,19 @@ const execBranch = ( opType, iname, argo ) => {
             console.log( 'ERROR' );
     }
 
-    return { opType: opType, pc: pc, cond: cond };
+    jumpAddr = ( jumpAddr << 2 ) + 0x8000;
+
+    if( cond ) {
+
+        register[ 'pc' ] = jumpAddr;
+        store.dispatch( setRegister({ id: 'pc', value: jumpAddr }) );
+
+    } else {
+
+        register[ 'pc' ] += 4;
+        store.dispatch( setRegister({ id: 'pc', value: register[ 'pc' ] }) );
+
+    }
 }
 
 /**
@@ -422,7 +436,7 @@ const execBranch = ( opType, iname, argo ) => {
  * @param {String} iname instruction name
  * @param {Object} argo Object of register sources
  */
-const execDataProc = ( opType, iname, argo ) => {
+const execDataProc = ( iname, argo ) => {
     let rd = argo.rd;
     let rSrc = argo.rSrc;
     let rSrc2 = argo.rSrc2;
@@ -482,7 +496,7 @@ const execDataProc = ( opType, iname, argo ) => {
             if( isImmd( rSrc2 ) )
                 res = register[ rSrc ] << rVal;
             else 
-                res = register[ rSrc ] << register[rSrc2 ];
+                res = register[ rSrc ] << register[ rSrc2 ];
             break;
         case 'lsr':
             if( isImmd( rSrc2 ) )
@@ -502,6 +516,11 @@ const execDataProc = ( opType, iname, argo ) => {
             else
                 res = register[ rSrc ] ^ register[ rSrc2 ];
             break;
+        case 'mul':
+            if( isImmd( rSrc2 ) )
+                res = register[ rSrc ] * rVal;
+            else
+                res = register[ rSrc ] * register[ rSrc2 ];
         default:
             /**
              * This log most likely wouldn't be reached since getOpType checked
@@ -511,9 +530,8 @@ const execDataProc = ( opType, iname, argo ) => {
     }
 
     // Perform
+    store.dispatch( setRegister({ id: rd, value: res }) );
     register[ rd ] = res;
-
-    return { opType: opType, register: rd, value: res };
 }
 
 /**
@@ -522,7 +540,7 @@ const execDataProc = ( opType, iname, argo ) => {
  * @param {String} iname 
  * @param {Object} argo 
  */
-const execMemAcc = ( opType, iname, argo ) => {
+const execMemAcc = ( iname, argo ) => {
     let rd = argo.rd;
     let addr = undefined;
     let rBase = argo.rBase;
@@ -550,6 +568,8 @@ const execMemAcc = ( opType, iname, argo ) => {
                 res = 0;
             }
 
+            store.dispatch( setRegister({ id: rd, value: res }) );
+
             break;
         case 'ldrb':
             if( offset != undefined ) {
@@ -568,6 +588,8 @@ const execMemAcc = ( opType, iname, argo ) => {
                 res = 0;
             }
 
+            store.dispatch( setRegister({ id: rd, value: res }) );
+
             break;
         case 'str':
             if( offset != undefined ) {
@@ -581,6 +603,8 @@ const execMemAcc = ( opType, iname, argo ) => {
 
             res = register[ rd ];
             stackObj[ addr ] = res;
+
+            store.dispatch( procStack({ addr: addr, value: res }) );
 
             break;
         case 'strb':
@@ -597,6 +621,8 @@ const execMemAcc = ( opType, iname, argo ) => {
             res = res & 0xFF;
             stackObj[ addr ] = res;
 
+            store.dispatch( procStack({ addr: addr, value: res }) );
+
             break;
         default:
             /**
@@ -606,77 +632,69 @@ const execMemAcc = ( opType, iname, argo ) => {
             console.log( 'ERROR: Memory accessing instruction not found.')
     }
 
-    return { opType: opType, register: rd, address: addr, value: res };
 }
 
-const execComb = ( opType, iname, argo ) => {
-
-    let res = [];
+const execComb = ( iname, argo ) => {
     
     switch( iname ) {
         case 'push':
             for( let i = 0; i < argo.rArr.length; i++ ) {
 
-                let memoryAccessingObj = execMemAcc( 2, 'str', {
+                execMemAcc( 2, 'str', {
                     rd: argo.rArr[ i ],
                     rBase: 'sp',
                     offset: '#-4'
                 });
 
-                let dataProcessingObj = execDataProc( 1, 'sub', {
+                execDataProc( 1, 'sub', {
                     rd: 'sp',
                     rSrc: 'sp',
                     rSrc2: '#4'
                 });
-
-                res.push( memoryAccessingObj );
-                
-                if( i == argo.rArr.length - 1 )
-                    res.push( dataProcessingObj );
             }
+
             break;
         case 'pop':
             for( let i = 0; i < argo.rArr.length; i++ ) {
 
-                let memoryAccessingObj = execMemAcc( 2, 'ldr', {
+                execMemAcc( 2, 'ldr', {
                     rd: argo.rArr[ i ],
                     rBase: 'sp'
                 });
 
-                let dataProcessingObj = execDataProc( 1, 'add', {
+                execDataProc( 1, 'add', {
                     rd: 'sp',
                     rSrc: 'sp',
                     rSrc2: '#4'
                 });
-
-                res.push( memoryAccessingObj );
-                
-                if( i == argo.rArr.length - 1 )
-                    res.push( dataProcessingObj );
             }
     }
-
-    return { opType: opType, actions: res };
 }
 
 /**
  * Execute the instruction with given list of arguments
+ * @param {int} opType
  * @param {String} iname instruction name
  * @param {Object} argo Object of register sources
  */
-const exec = ( iname, argo ) => {
-
-    // opType is -1 if instruction isn't found
-    let opType = getOpType( iname );
+const exec = ( opType, iname, argo ) => {
 
     if( opType == 1 )
-        return execDataProc( opType, iname, argo );
+        execDataProc( iname, argo );
     else if( opType == 2 )
-        return execMemAcc( opType, iname, argo );
+        execMemAcc( iname, argo );
     else if( opType == 0 )
-        return execBranch( opType, iname, argo );
+        execBranch( iname, argo );
     else if( opType == 3 )
-        return execComb( opType, iname, argo );
+        execComb( iname, argo );
+
+    if( opType != 0 ) {
+        store.dispatch( setRegister({ 
+            id: 'pc', 
+            value: register[ 'pc' ] += 4 
+        })
+        );
+    }
 }
 
 /**
@@ -686,6 +704,8 @@ const exec = ( iname, argo ) => {
 const transpileInstrArr = instrArr => {
 
     let exitCode = 0;
+
+    let jsArr = [];
 
     let msgArr = [];
 
@@ -724,12 +744,19 @@ const transpileInstrArr = instrArr => {
             msgArr.push( error.message );
             exitCode = 1;
         }
+
+        if( exitCode != 1 )
+            jsArr.push({
+                iname: iname.name,
+                opType: opType,
+                argo: argo
+            });
     }
 
     if( msgArr.length == 0 )
         return { 
             exitCode: exitCode, 
-            msgArr: [ "Transpile completed. Success." ] 
+            jsArr: jsArr
         };
     
     return { 
@@ -742,78 +769,45 @@ const transpileInstrArr = instrArr => {
  * Transpile the String instructions into Array of Objects
  * @param {Array} instrArr list of instruction lines
  */
-const debugInstrArr = instrArr => {
+const runInstrArr = instrArr => {
 
-    let objArr = [];
+    let instrObj = transpileInstrArr( instrArr );
 
-    for( let i = 0; i < instrArr.length; i ++ ) {
-        let currInstr = instrArr[ i ];
-        if( hasLabel( currInstr ) ) {
-            let label = getFirstWord( currInstr );
-            let labelName = label.name.substring( 0, label.name.length - 1 );
+    if( instrObj.exitCode == 1 )
+        return instrObj;
 
-            labelObj[ labelName ] = i;
-            instrArr[ i ] = currInstr.substring( label.index + 1, 
-                currInstr.length );  
-        }
-    }
+    for( let i = 0; i < instrObj.jsArr.length; i++ ) {
 
-    for( let i = 0; i < instrArr.length; i++ ) {
+        let currInstr = instrObj.jsArr[ i ];
 
-        let currInstr = instrArr[ i ];
-
-        // If the current Instruction is only consists of spaces and tabs,
-        // continue to the next Instruction.
-        currInstr = currInstr.trim();
-        if( currInstr.length == 0 )
-            continue;
-
-        let iname = getInstructionName( currInstr );
-        let opType = getOpType( iname.name );
-        let argo = getArguments( opType, currInstr, iname.index );
-
-        let resObj = exec( iname.name, argo );
+        exec( currInstr.opType, currInstr.iname, currInstr.argo );
 
         /* Perform Jump */
-        if( opType == 0 ) {
-            if( resObj.cond )
-                i = resObj.pc - 1;
+        if( currInstr.opType == 0 ) {
+            i = ( ( register[ 'pc' ] - 0x8000 ) >>> 2 ) - 1;
         }
-
-        objArr.push( resObj );      
     }
-
-    return objArr;
 }
+
+const setProgramCounter = pc => {
+    register.pc = pc;
+}
+
+const state = store.getState();
 
 var labelObj = {};
 
-var stackObj = {};
+var stackObj = state.memory.stack;
 
-var register = {
-    r0: 0,
-    r1: 0,
-    r2: 0,
-    r3: 0,
-    r4: 0,
-    r5: 0,
-    r6: 0,
-    r7: 0,
-    r8: 0,
-    r9: 0,
-    r10: 0,
-    lr: 0,
-    fp: 0,
-    ip: 0,
-    sp: 0x4000,
-    pc: 0x8000
-};
+var register = state.register;
 
 var cmpState = 0;
 
 const Instruction = {
     transpileInstrArr: transpileInstrArr,
-    debugInstrArr: debugInstrArr
+    runInstrArr: runInstrArr,
+    step: exec,
+    setProgramCounter: setProgramCounter
 };
 
 export default Instruction;

@@ -16,15 +16,15 @@ class DevContainer extends Component {
             error: '',
             instruction: "",
             line: 1,
-            objArr: null,               // Array of all instruction
             instrCounter: 0             // Instruction index
         };
 
-        this.handleInput  = this.handleInput.bind( this );
-        this.handleTab    = this.handleTab.bind( this );
-        this.handleRun    = this.handleRun.bind( this );
-        this.handleStep   = this.handleStep.bind( this );
-        this.executeInstr = this.executeInstr.bind( this );
+        this.handleInput = this.handleInput.bind( this );
+        this.handleTab   = this.handleTab.bind( this );
+        this.handleRun   = this.handleRun.bind( this );
+        this.handleDebug = this.handleDebug.bind( this );
+        this.handleStep  = this.handleStep.bind( this );
+        this.resolveRes  = this.resolveRes.bind( this );
     }
 
     createLineNumber = ( count ) => {
@@ -36,9 +36,7 @@ class DevContainer extends Component {
         return arr;
     }
 
-    executeInstr() {
-
-        let obj = this.state.objArr[ this.state.instrCounter ];
+    resolveRes( obj ) {
 
         if( obj.opType == 1 ) {
 
@@ -95,32 +93,48 @@ class DevContainer extends Component {
         this.setState({ line: lineCount });
     }
 
-    handleRun( e ) {
-        e.preventDefault();
+    handleDebug() {
 
         let instrArr = this.state.instruction.split( '\n' );
 
+        this.props.setRegister({ id: 'pc', value: 0x8000 });
+        Instruction.setProgramCounter( 0x8000 );
         this.setState({ instrCounter: 0 });
 
- 
-        let resObj = Instruction.transpileInstrArr( instrArr );
+        let instrObj = Instruction.transpileInstrArr( instrArr );
 
-        if( resObj.exitCode == 0 ) {
-            let objArr = Instruction.debugInstrArr( instrArr );
-            this.setState({ objArr: objArr });
-            console.log( objArr );
-        } else {
-            console.log( 'Program exited ', resObj.exitCode );
-            for( let i = 0; i < resObj.msgArr.length; i++ )
-                console.log( resObj.msgArr[ i ] );
+        if( instrObj.exitCode == 1 ) {
+
+            for( let i = 0; i < instrObj.msgArr.length; i++ ) {
+
+                console.log( instrObj.msgArr[ i ] );
+            }
         }
+
+        console.log( instrObj );
+
+        this.setState({ instrObj: instrObj });
+    }
+
+    handleRun() {
+
+        let instrArr = this.state.instruction.split( '\n' );
+        Instruction.runInstrArr( instrArr );
     }
 
     handleStep() {
-        if( this.state.instrCounter < this.state.objArr.length ) {
 
-            this.executeInstr();
-            this.setState({ instrCounter: this.state.instrCounter + 1 });
+        if( this.state.instrObj != undefined &&
+            this.state.instrCounter < this.state.instrObj.jsArr.length ) {
+            
+            let currInstr = this.state.instrObj.jsArr[ this.state.instrCounter ];
+            Instruction.step( currInstr.opType, currInstr.iname, 
+                currInstr.argo );
+            
+            setTimeout( () => {
+                let counter = ( this.props[ 'pc' ] - 0x8000 ) >>> 2;
+                this.setState({ instrCounter: counter });
+            }, 0 );
         } else {
             console.log( 'Program exited: 0' );
         }
@@ -131,6 +145,7 @@ class DevContainer extends Component {
             <div className="DevContainer">
                 <div className="DevActions">
                     <button onClick={this.handleRun}>Run</button>
+                    <button onClick={this.handleDebug}>Debug</button>
                     <button onClick={this.handleStep}>Step</button>
                     <button>Next</button>
                     <button>Finish</button>
