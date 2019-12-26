@@ -1,0 +1,37 @@
+.Log {
+    position: relative;
+    width: 100%;
+    min-width: 10em;
+}
+
+.Log h1 {
+    margin-left: .25em;
+    font-size: 1.25em;
+    font-weight: normal;
+    margin-bottom: 1em;
+    color: #222;
+}
+
+.LogTitle {
+    position: relative;
+    width: 100%;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 1em;
+}
+
+.LogTitle h2 {
+    margin: 0;
+    color: #555;
+    padding: .5em;
+    font-size: .9em;
+    font-weight: normal;
+}
+
+.Log h3 {
+    margin: 0;
+    margin-left: 1.5em;
+    margin-bottom: 2em;
+    color: #555;
+    font-size: .9em;
+    font-weight: normal;
+}
