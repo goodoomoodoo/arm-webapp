@@ -1,46 +1,12 @@
 .Rcontainer {
     position: relative;
-    width: 90%;
-    margin: auto;
-    margin-left: 2.5em;
+    width: 100%;
 }
 
 .Rcontainer h1 {
+    font-size: 1.25em;
     font-weight: normal;
     margin-left: .25em;
+    margin-bottom: 1em;
     color: #222;
-}
-
-.Rcontrol {
-    position: relative;
-    width: 100%;
-    border-bottom: 1px solid #ccc;
-}
-
-.Rcontrol button {
-    background: white;
-    font-size: 1em;
-    padding: .5em;
-    padding-right: .75em;
-    padding-left: .75em;
-    margin-left: 2px;
-}
-
-.Rcontrol button:hover {
-    background: #f5f5f5;
-}
-
-.Rcontrol button:active {
-    background: #e0e0e0;
-}
-
-.unselected {
-    border: none;
-    color: #555;
-}
-
-.selected {
-    border: none;
-    box-shadow: 0 -1px 3px #bbb;
-    color: rgb(8, 151, 91);
 }

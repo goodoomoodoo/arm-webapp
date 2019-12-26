@@ -6,10 +6,10 @@
 
 .BaseBar button {
     background: white;
-    font-size: 1em;
+    font-size: .9em;
     padding: .5em;
-    padding-right: .75em;
-    padding-left: .75em;
+    padding-right: .5em;
+    padding-left: .5em;
     margin-left: 2px;
 }
 

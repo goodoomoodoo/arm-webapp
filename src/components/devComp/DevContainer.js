@@ -119,6 +119,8 @@ class DevContainer extends Component {
     handleRun() {
 
         let instrArr = this.state.instruction.split( '\n' );
+        this.props.setRegister({ id: 'pc', value: 0x8000 });
+        Instruction.setProgramCounter( 0x8000 );
         Instruction.runInstrArr( instrArr );
     }
 
@@ -144,11 +146,11 @@ class DevContainer extends Component {
         return (
             <div className="DevContainer">
                 <div className="DevActions">
-                    <button onClick={this.handleRun}>Run</button>
-                    <button onClick={this.handleDebug}>Debug</button>
-                    <button onClick={this.handleStep}>Step</button>
-                    <button>Next</button>
                     <button>Finish</button>
+                    <button>Next</button>
+                    <button onClick={this.handleStep}>Step</button>
+                    <button onClick={this.handleDebug}>Debug</button>
+                    <button onClick={this.handleRun}>Run</button>           
                 </div>
                 <div className="DevEditor">
                     <div className="DevLineNumber">

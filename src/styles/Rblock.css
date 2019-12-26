@@ -6,13 +6,13 @@
     grid-template-rows: 1fr 1fr;
     border-radius: 1px;
     box-shadow: 0 2px 3px #ccc;
-    margin-top: 1em;
-    margin-right: 1em;
+    margin-top: .75em;
+    margin-right: .75em;
 }
 
 .Rblock div {
     position: relative;
-    font-size: 1em;
+    font-size: .9em;
     text-align: center;
     padding: .25em;
     color: #888;

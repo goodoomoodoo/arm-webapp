@@ -1,12 +1,12 @@
 .Home {
     position: relative;
     width: 95%;
-    max-width: 80em;
-    min-width: 50em;
+    max-width: 100em;
+    min-width: 80em;
     height: 100%;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: auto 30em auto;
     grid-template-rows: auto;
-    
+    grid-column-gap: 3em;
 }
