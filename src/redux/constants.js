@@ -1,3 +1,5 @@
 export const SET_REGISTER = 'SET_REGISTER';
 
 export const PROC_STACK = 'PROC_STACK';
+
+export const SET_CONSOLE_OUTPUT = 'SET_CONSOLE_OUTPUT';

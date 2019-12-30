@@ -27,11 +27,34 @@
     font-weight: normal;
 }
 
+.LogBox {
+    position: relative;
+    margin-bottom: 3vh;
+    border-radius: 5px;
+}
+
 .Log h3 {
     margin: 0;
     margin-left: 1.5em;
-    margin-bottom: 2em;
-    color: #555;
+    padding-left: 1em;
+    color: #888;
     font-size: 1em;
     font-weight: normal;
+}
+
+.LogBox h3:first-child {
+    padding-top: 3px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.LogBox h3:last-child {
+    padding-bottom: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.LogBox .Error {
+    background: rgb(253, 222, 222);
+    color: rgb(255, 45, 45);
 }

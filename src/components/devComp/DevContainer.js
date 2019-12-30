@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { setRegister, procStack } from '../../redux/actions/index';
+import { setRegister, procStack, setConsoleOutput } from '../../redux/actions/index';
 import Instruction from '../../js/Instruction';
 
 import '../../styles/DevContainer.css';
@@ -111,6 +111,8 @@ class DevContainer extends Component {
             }
         }
 
+        this.props.setConsoleOutput({ msgArr: instrObj.msgArr });
+
         console.log( instrObj );
 
         this.setState({ instrObj: instrObj });
@@ -170,7 +172,8 @@ class DevContainer extends Component {
 const mapDispatchToProps = dispatch => {
     return {
         setRegister: payload => dispatch( setRegister( payload ) ),
-        procStack: payload => dispatch( procStack( payload ) )
+        procStack: payload => dispatch( procStack( payload ) ),
+        setConsoleOutput: payload => dispatch( setConsoleOutput( payload ) )
     }
 };
 

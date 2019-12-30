@@ -82,8 +82,12 @@ const checkSyntax = ( opType, iname, argo, line ) => {
         throw new Error( `Illegal Instruction: ${iname} at ${line}.`);
 
     if( opType == 0 ) {
-        
-        if( labelObj[ argo.label ] == undefined )
+
+        if( iname === 'bx' ) {
+            if( !isRegister( argo.label ) )
+                throw new Error( `Syntax Error: bx expects register at line
+                    ${line}.`);
+        } else if( labelObj[ argo.label ] == undefined )
             throw new Error( `Syntax Error: label ${argo.label} not found.` );
 
     }
@@ -333,9 +337,9 @@ const getArguments = ( opType, input, index ) => {
                 throw new Error( `Syntax error: } expected at the end of the 
                     line.` );
             }
+        } else {
+            throw new Error( `Syntax error: { expected at the start of the line.` );
         }
-    } else {
-        throw new Error( `Syntax error: { expected at the start of the line.` );
     }
 
     return {};
@@ -402,6 +406,10 @@ const execBranch = ( iname, argo ) => {
         case 'ble':
             cond = cmpState <= 0;
             break;
+        case 'bl':
+            cond = true;
+            execDataProc( 'mov', { rd: 'lr', rSrc: register.pc + 4 });
+            break;
         case 'blt':
             cond = cmpState < 0;
             break;
@@ -411,11 +419,18 @@ const execBranch = ( iname, argo ) => {
         case 'bgt':
             cond = cmpState > 0;
             break;
+        case 'bx':
+            cond = true;
+            break;
         default:
             console.log( 'ERROR' );
     }
 
     jumpAddr = ( jumpAddr << 2 ) + 0x8000;
+
+    if( iname === 'bx' ) {
+        jumpAddr = register[ argo.label ];
+    }
 
     if( cond ) {
 
@@ -756,7 +771,8 @@ const transpileInstrArr = instrArr => {
     if( msgArr.length == 0 )
         return { 
             exitCode: exitCode, 
-            jsArr: jsArr
+            jsArr: jsArr,
+            msgArr: [ 'Transpiled success. Program exit: 0' ]
         };
     
     return { 

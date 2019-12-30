@@ -1,4 +1,4 @@
-import { SET_REGISTER, PROC_STACK } from '../constants';
+import { SET_REGISTER, PROC_STACK, SET_CONSOLE_OUTPUT } from '../constants';
 
 
 export const setRegister = payload => {
@@ -21,4 +21,14 @@ export const procStack = payload => {
      * }
      */
     return { type: PROC_STACK, payload };
+}
+
+export const setConsoleOutput = payload => {
+    /**
+     * payload
+     * {
+     *   msgArr: 'array of error message'
+     * }
+     */
+    return { type: SET_CONSOLE_OUTPUT, payload };
 }
