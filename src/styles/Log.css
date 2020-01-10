@@ -58,3 +58,7 @@
     background: rgb(253, 222, 222);
     color: rgb(255, 45, 45);
 }
+
+.LogBox .Success {
+    color: #555;
+}

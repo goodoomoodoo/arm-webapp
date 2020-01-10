@@ -19,8 +19,8 @@ const initialState = {
     lr: 0,
     pc: 0x8000
   },
-  memory: { stack: { } },
-  console: { output: [] }
+  memory: { stack: {} },
+  console: { output: {} }
 }
 
 const rootReducer = ( state = initialState, action ) => {
@@ -39,9 +39,9 @@ const rootReducer = ( state = initialState, action ) => {
   }
 
   if( action.type === SET_CONSOLE_OUTPUT ) {
-    let newMsg = Object.assign( {}, state.console, 
-      { output: action.payload.msgArr });
-    return Object.assign( {}, state, { console: newMsg });
+    let newOutput = Object.assign( {}, state.console, 
+      { output: action.payload });
+    return Object.assign( {}, state, { console: newOutput });
   }
 
   return state;

@@ -14,16 +14,24 @@ class Log extends Component {
                 </div>
                 <div className="LogBox">
                     {
-                        this.props.output.length === 0 &&
+                        this.props.output.msgArr === undefined &&
                         <h3>No Output.</h3>
                     }
                     {
-                        this.props.output.length !== 0 &&
-                        this.props.output.map( ( msg, i ) => {
+                        this.props.output.msgArr !== undefined &&
+                        this.props.output.exitCode !== 0 &&
+                        this.props.output.msgArr.map( ( msg, i ) => {
                             return (
                             <h3 className="Error" key={i}>{msg}</h3>
                             )
                         })
+                    }
+                    {
+                        this.props.output.msgArr !== undefined &&
+                        this.props.output.exitCode === 0 &&
+                        <h3 className="Success">
+                            {this.props.output.msgArr[ 0 ]}
+                        </h3>
                     }
                 </div>
                 <div className="LogTitle">

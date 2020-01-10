@@ -27,6 +27,7 @@ export const setConsoleOutput = payload => {
     /**
      * payload
      * {
+     *   exitCode: exit value
      *   msgArr: 'array of error message'
      * }
      */

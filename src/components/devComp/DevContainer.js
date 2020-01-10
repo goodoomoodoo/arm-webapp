@@ -103,15 +103,9 @@ class DevContainer extends Component {
 
         let instrObj = Instruction.transpileInstrArr( instrArr );
 
-        if( instrObj.exitCode == 1 ) {
-
-            for( let i = 0; i < instrObj.msgArr.length; i++ ) {
-
-                console.log( instrObj.msgArr[ i ] );
-            }
-        }
-
-        this.props.setConsoleOutput({ msgArr: instrObj.msgArr });
+        this.props.setConsoleOutput({ 
+            exitCode: instrObj.exitCode,
+            msgArr: instrObj.msgArr });
 
         console.log( instrObj );
 

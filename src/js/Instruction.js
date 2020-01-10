@@ -347,7 +347,7 @@ const getArguments = ( opType, input, index ) => {
 
 /**
  * Return instruction type
- * 0: Branching 1: Data-Processing 2:Memory-Accessing
+ * 0: Branching 1: Data-Processing 2:Memory-Accessing 3:Combination
  * @param {String} iname instruction name
  */
 const getOpType = iname => {
