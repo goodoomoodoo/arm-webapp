@@ -1,4 +1,4 @@
-import { SET_REGISTER, PROC_STACK, SET_CONSOLE_OUTPUT } from '../constants';
+import { SET_REGISTER, SET_STACK, SET_CONSOLE_OUTPUT } from '../constants';
 
 const initialState = {
   register: {
@@ -19,23 +19,19 @@ const initialState = {
     lr: 0,
     pc: 0x8000
   },
-  memory: { stack: {} },
+  stack: {},
   console: { output: {} }
 }
 
 const rootReducer = ( state = initialState, action ) => {
   if( action.type === SET_REGISTER ) {
-    let newRegister = Object.assign( {}, state.register, 
-      { [action.payload.id]: action.payload.value } );
+    let newRegister = Object.assign( {}, action.payload );
     return Object.assign( {}, state, { register: newRegister } );
   }
 
-  if( action.type === PROC_STACK ) {
-    let newStack = Object.assign( {}, state.memory.stack, 
-      { [action.payload.addr]: action.payload.value } );
-    let newMemory = Object.assign( {}, state.memory, { stack: newStack } );
-    console.log( newMemory );
-    return Object.assign( {}, state, { memory: newMemory } );
+  if( action.type === SET_STACK ) {
+    let newStack = Object.assign( {}, action.payload );
+    return Object.assign( {}, state, { stack: newStack } );
   }
 
   if( action.type === SET_CONSOLE_OUTPUT ) {

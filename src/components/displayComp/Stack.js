@@ -45,7 +45,7 @@ class Stack extends Component {
 }
 
 const mapStateToProps = state => {
-    return state.memory; // returns the stack object
+    return { stack: state.stack }; // returns the stack object
 }
 
 export default connect( mapStateToProps )( Stack );

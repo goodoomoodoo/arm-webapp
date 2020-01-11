@@ -13,7 +13,7 @@
 
  import { REGISTER_NAME, INSTR_TYPE } from './constants';
  import store from "../redux/store/index";
-import { setRegister, procStack } from '../redux/actions';
+import { setRegister, setStack } from '../redux/actions';
 
 /**
  * Check if string represent immediate value
@@ -435,13 +435,9 @@ const execBranch = ( iname, argo ) => {
     if( cond ) {
 
         register[ 'pc' ] = jumpAddr;
-        store.dispatch( setRegister({ id: 'pc', value: jumpAddr }) );
-
     } else {
 
         register[ 'pc' ] += 4;
-        store.dispatch( setRegister({ id: 'pc', value: register[ 'pc' ] }) );
-
     }
 }
 
@@ -544,8 +540,6 @@ const execDataProc = ( iname, argo ) => {
             console.log( 'ERROR: Data processing instruction not found.' );
     }
 
-    // Perform
-    store.dispatch( setRegister({ id: rd, value: res }) );
     register[ rd ] = res;
 }
 
@@ -583,8 +577,6 @@ const execMemAcc = ( iname, argo ) => {
                 res = 0;
             }
 
-            store.dispatch( setRegister({ id: rd, value: res }) );
-
             break;
         case 'ldrb':
             if( offset != undefined ) {
@@ -603,8 +595,6 @@ const execMemAcc = ( iname, argo ) => {
                 res = 0;
             }
 
-            store.dispatch( setRegister({ id: rd, value: res }) );
-
             break;
         case 'str':
             if( offset != undefined ) {
@@ -618,9 +608,6 @@ const execMemAcc = ( iname, argo ) => {
 
             res = register[ rd ];
             stackObj[ addr ] = res;
-
-            store.dispatch( procStack({ addr: addr, value: res }) );
-
             break;
         case 'strb':
             if( offset != undefined ) {
@@ -636,8 +623,6 @@ const execMemAcc = ( iname, argo ) => {
             res = res & 0xFF;
             stackObj[ addr ] = res;
 
-            store.dispatch( procStack({ addr: addr, value: res }) );
-
             break;
         default:
             /**
@@ -646,7 +631,6 @@ const execMemAcc = ( iname, argo ) => {
              */
             console.log( 'ERROR: Memory accessing instruction not found.')
     }
-
 }
 
 const execComb = ( iname, argo ) => {
@@ -703,13 +687,19 @@ const exec = ( opType, iname, argo ) => {
     else if( opType == 3 )
         execComb( iname, argo );
 
+    // Increase PC by 2 byte
     if( opType != 0 ) {
-        store.dispatch( setRegister({ 
-            id: 'pc', 
-            value: register[ 'pc' ] += 4 
-        })
-        );
+        register[ 'pc' ] += 4;
     }
+}
+
+/**
+ * Update store state
+ */
+const updateState = () => {
+
+    store.dispatch( setRegister( register ) );
+    store.dispatch( setStack( stackObj ) );
 }
 
 /**
@@ -782,6 +772,16 @@ const transpileInstrArr = instrArr => {
 }
 
 /**
+ * 
+ * @param {String} instr 
+ */
+const stepInstr = instr => {
+
+    exec( instr.opType, instr.iname, instr.argo );  
+    updateState();      
+}
+
+/**
  * Transpile the String instructions into Array of Objects
  * @param {Array} instrArr list of instruction lines
  */
@@ -803,17 +803,19 @@ const runInstrArr = instrArr => {
             i = ( ( register[ 'pc' ] - 0x8000 ) >>> 2 ) - 1;
         }
     }
+
+    updateState();
 }
 
 const setProgramCounter = pc => {
-    register.pc = pc;
+    register[ 'pc' ] = pc;
 }
 
 const state = store.getState();
 
 var labelObj = {};
 
-var stackObj = state.memory.stack;
+var stackObj = state.stack;
 
 var register = state.register;
 
@@ -822,7 +824,7 @@ var cmpState = 0;
 const Instruction = {
     transpileInstrArr: transpileInstrArr,
     runInstrArr: runInstrArr,
-    step: exec,
+    step: stepInstr,
     setProgramCounter: setProgramCounter
 };
 

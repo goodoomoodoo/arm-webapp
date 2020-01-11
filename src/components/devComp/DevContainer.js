@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { setRegister, procStack, setConsoleOutput } from '../../redux/actions/index';
+import { setRegister, setStack, 
+    setConsoleOutput } from '../../redux/actions/index';
 import Instruction from '../../js/Instruction';
 
 import '../../styles/DevContainer.css';
@@ -24,7 +25,6 @@ class DevContainer extends Component {
         this.handleRun   = this.handleRun.bind( this );
         this.handleDebug = this.handleDebug.bind( this );
         this.handleStep  = this.handleStep.bind( this );
-        this.resolveRes  = this.resolveRes.bind( this );
     }
 
     createLineNumber = ( count ) => {
@@ -34,41 +34,6 @@ class DevContainer extends Component {
             arr.push( <span key={i}>{i + 1}</span> );
 
         return arr;
-    }
-
-    resolveRes( obj ) {
-
-        if( obj.opType == 1 ) {
-
-            this.props.setRegister({ id: obj.register, value: obj.value });
-
-        } else if( obj.opType == 2 ) {
-
-            this.props.setRegister({ id: obj.register, value: obj.value });
-            this.props.procStack({ addr: obj.address, value: obj.value });
-
-        } else if( obj.opType == 3 ) {
-            
-            let i = 0;
-            for( ; i < obj.actions.length - 1 ; i++ ) {
-
-                this.props.setRegister({ 
-                    id: obj.actions[ i ].register, 
-                    value: obj.actions[ i ].value 
-                });
-                this.props.procStack({ 
-                    addr: obj.actions[ i ].address, 
-                    value: obj.actions[ i ].value
-                });
-            }
-
-            this.props.setRegister({ 
-                id: obj.actions[ i ].register,
-                value: obj.actions[ i ].value
-            });
-        }
-
-        this.props.setRegister({ id: 'pc', value: this.props.pc + 4 });
     }
 
     handleTab( e ) {        
@@ -97,7 +62,6 @@ class DevContainer extends Component {
 
         let instrArr = this.state.instruction.split( '\n' );
 
-        this.props.setRegister({ id: 'pc', value: 0x8000 });
         Instruction.setProgramCounter( 0x8000 );
         this.setState({ instrCounter: 0 });
 
@@ -115,7 +79,6 @@ class DevContainer extends Component {
     handleRun() {
 
         let instrArr = this.state.instruction.split( '\n' );
-        this.props.setRegister({ id: 'pc', value: 0x8000 });
         Instruction.setProgramCounter( 0x8000 );
         Instruction.runInstrArr( instrArr );
     }
@@ -126,11 +89,10 @@ class DevContainer extends Component {
             this.state.instrCounter < this.state.instrObj.jsArr.length ) {
             
             let currInstr = this.state.instrObj.jsArr[ this.state.instrCounter ];
-            Instruction.step( currInstr.opType, currInstr.iname, 
-                currInstr.argo );
+            Instruction.step( currInstr );
             
             setTimeout( () => {
-                let counter = ( this.props[ 'pc' ] - 0x8000 ) >>> 2;
+                let counter = ( this.props.register[ 'pc' ] - 0x8000 ) >>> 2;
                 this.setState({ instrCounter: counter });
             }, 0 );
         } else {
@@ -166,13 +128,15 @@ class DevContainer extends Component {
 const mapDispatchToProps = dispatch => {
     return {
         setRegister: payload => dispatch( setRegister( payload ) ),
-        procStack: payload => dispatch( procStack( payload ) ),
-        setConsoleOutput: payload => dispatch( setConsoleOutput( payload ) )
+        setStack: payload => dispatch( setStack( payload ) ),
+        setConsoleOutput: payload => dispatch( setConsoleOutput( payload ) ),
     }
 };
 
 const mapStateToProps = state => {
-    return state.register;
+    // have to return an object otw the react component cannot compare to
+    // previous state
+    return { register: state.register };
 }
 
 export default connect( mapStateToProps, mapDispatchToProps )( DevContainer );

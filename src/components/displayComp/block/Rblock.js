@@ -13,15 +13,15 @@ class Rblock extends Component {
                 <div className="Rblock-val">
                     { 
                         this.props.base === 'Decimal' &&
-                        this.props[ this.props.rName ].toString() 
+                        this.props.register[ this.props.rName ].toString() 
                     }
                     { 
                         this.props.base === 'Hexadecimal' &&
-                        this.props[ this.props.rName ].toString( 16 ) 
+                        this.props.register[ this.props.rName ].toString( 16 ) 
                     }
                     { 
                         this.props.base === 'Binary' &&
-                        (this.props[ this.props.rName ] >>> 0).toString( 2 ) 
+                        (this.props.register[ this.props.rName ] >>> 0).toString( 2 ) 
                     }
                 </div>
             </div>
@@ -30,7 +30,7 @@ class Rblock extends Component {
 }
 
 const mapStateToProps = state => {
-    return state.register;
+    return { register: state.register };
 }
 
 export default connect( mapStateToProps )( Rblock );

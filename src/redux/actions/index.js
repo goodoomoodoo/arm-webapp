@@ -1,4 +1,5 @@
-import { SET_REGISTER, PROC_STACK, SET_CONSOLE_OUTPUT } from '../constants';
+import { SET_REGISTER, 
+    SET_STACK, SET_CONSOLE_OUTPUT } from '../constants';
 
 
 export const setRegister = payload => {
@@ -9,10 +10,11 @@ export const setRegister = payload => {
      *   value: 'register value'
      * }
      */
+    console.log( "set register" );
     return { type: SET_REGISTER, payload }
 };
 
-export const procStack = payload => {
+export const setStack = payload => {
     /**
      * payload
      * {
@@ -20,7 +22,7 @@ export const procStack = payload => {
      *   value: 'value to be store'
      * }
      */
-    return { type: PROC_STACK, payload };
+    return { type: SET_STACK, payload };
 }
 
 export const setConsoleOutput = payload => {
