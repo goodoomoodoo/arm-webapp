@@ -11,8 +11,8 @@
  * TODO: create documentation
  */
 
- import { REGISTER_NAME, INSTR_TYPE } from './constants';
- import store from "../redux/store/index";
+import { REGISTER_NAME, INSTR_TYPE } from './constants';
+import store from "../redux/store/index";
 import { setRegister, setStack } from '../redux/actions';
 
 /**

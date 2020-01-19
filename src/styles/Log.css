@@ -1,7 +1,7 @@
 .Log {
     position: relative;
     width: 100%;
-    min-width: 10em;
+    min-width: 23em;
 }
 
 .Log h1 {
@@ -36,7 +36,9 @@
 .Log h3 {
     margin: 0;
     margin-left: 1.5em;
-    padding-left: 1em;
+    padding-left: .75em;
+    padding-right: .75em;
+    padding-bottom: 3px;
     color: #888;
     font-size: 1em;
     font-weight: normal;
@@ -59,6 +61,22 @@
     color: rgb(255, 45, 45);
 }
 
-.LogBox .Success {
+.Log .Success {
     color: #555;
+}
+
+.LogInstruction {
+    position: relative;
+    margin-left: 1.5em;
+    color: #555;
+
+}
+
+.LogInstruction span:first-child {
+    position: relative;
+    padding-left: .75em;
+}
+
+.LogInstruction span {
+    padding-left: .5em;
 }

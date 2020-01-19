@@ -1,4 +1,8 @@
-import { SET_REGISTER, SET_STACK, SET_CONSOLE_OUTPUT } from '../constants';
+import { 
+  SET_REGISTER,
+  SET_STACK,
+  SET_CONSOLE_OUTPUT,
+  SET_CONSOLE_INSTRUCTION } from '../constants';
 
 const initialState = {
   register: {
@@ -20,7 +24,7 @@ const initialState = {
     pc: 0x8000
   },
   stack: {},
-  console: { output: {} }
+  console: { output: {}, instr: undefined }
 }
 
 const rootReducer = ( state = initialState, action ) => {
@@ -36,8 +40,14 @@ const rootReducer = ( state = initialState, action ) => {
 
   if( action.type === SET_CONSOLE_OUTPUT ) {
     let newOutput = Object.assign( {}, state.console, 
-      { output: action.payload });
+      { output: action.payload } );
     return Object.assign( {}, state, { console: newOutput });
+  }
+
+  if( action.type === SET_CONSOLE_INSTRUCTION ) {
+    let newInstr = Object.assign( {}, state.console, 
+      { instr: action.payload.instr } );
+    return Object.assign( {}, state, { console: newInstr } );
   }
 
   return state;

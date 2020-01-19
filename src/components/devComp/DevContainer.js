@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { setRegister, setStack, 
+import { setConsoleInstruction, 
     setConsoleOutput } from '../../redux/actions/index';
 import Instruction from '../../js/Instruction';
 
@@ -71,9 +71,13 @@ class DevContainer extends Component {
             exitCode: instrObj.exitCode,
             msgArr: instrObj.msgArr });
 
-        console.log( instrObj );
-
         this.setState({ instrObj: instrObj });
+
+        if( instrObj.exitCode === 0 )
+            this.props.setConsoleInstruction({ instr: instrObj.jsArr[ 0 ] } );
+        else
+            this.props.setConsoleInstruction({ 
+                instr: undefined } );
     }
 
     handleRun() {
@@ -95,6 +99,15 @@ class DevContainer extends Component {
                 let counter = ( this.props.register[ 'pc' ] - 0x8000 ) >>> 2;
                 this.setState({ instrCounter: counter });
             }, 0 );
+
+            let nextInstr = this.state.instrObj
+                .jsArr[ this.state.instrCounter + 1 ];
+
+            if( nextInstr == undefined )
+                this.props.setConsoleInstruction({ 
+                    instr: { iname: 'Program exited.' } });
+            else
+                this.props.setConsoleInstruction({ instr: nextInstr });
         } else {
             console.log( 'Program exited: 0' );
         }
@@ -127,9 +140,9 @@ class DevContainer extends Component {
 
 const mapDispatchToProps = dispatch => {
     return {
-        setRegister: payload => dispatch( setRegister( payload ) ),
-        setStack: payload => dispatch( setStack( payload ) ),
         setConsoleOutput: payload => dispatch( setConsoleOutput( payload ) ),
+        setConsoleInstruction: payload => 
+            dispatch( setConsoleInstruction( payload ) )
     }
 };
 

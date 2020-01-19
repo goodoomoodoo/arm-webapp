@@ -1,5 +1,8 @@
-import { SET_REGISTER, 
-    SET_STACK, SET_CONSOLE_OUTPUT } from '../constants';
+import { 
+    SET_REGISTER, 
+    SET_STACK,
+    SET_CONSOLE_OUTPUT,
+    SET_CONSOLE_INSTRUCTION } from '../constants';
 
 
 export const setRegister = payload => {
@@ -34,4 +37,14 @@ export const setConsoleOutput = payload => {
      * }
      */
     return { type: SET_CONSOLE_OUTPUT, payload };
+}
+
+export const setConsoleInstruction = payload => {
+    /**
+     * payload
+     * {
+     *   instr: current instruction
+     * }
+     */
+    return { type: SET_CONSOLE_INSTRUCTION, payload }
 }
