@@ -5,6 +5,8 @@ import DevContainer from './devComp/DevContainer';
 import Stack from './displayComp/Stack';
 import Log from './Log';
 
+import Decoder from '../js/Decoder';
+
 import '../styles/Home.css';
 
 class Home extends Component {

@@ -3,7 +3,7 @@
 
 // Plugins
 const plugins = [{
-        location: "/home/arvin/Workspace/arm-webApp",
+        location: "/Users/arvinlin/Workplace/arm-webapp",
         plugins: [],
         hooks: {}
       }]
