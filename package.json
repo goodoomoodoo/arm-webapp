@@ -21,7 +21,8 @@
     "stage": "react-static build --staging",
     "build": "react-static build",
     "analyze": "react-static build --analyze",
-    "serve": "serve dist -p 3000"
+    "serve": "serve dist -p 3000",
+    "test": "jest"
   },
   "dependencies": {
     "react": "^16.9.0",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^10.0.2",
+    "babel-jest": "^26.0.1",
     "eslint": "^6.1.0",
     "eslint-config-react-app": "^5.0.1",
     "eslint-config-react-tools": "^1.1.7",
@@ -42,6 +44,7 @@
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.14.3",
+    "jest": "^26.0.1",
     "serve": "^11.1.0"
   }
 }
