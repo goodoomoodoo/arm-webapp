@@ -15,5 +15,29 @@ describe('Memory Simple Test', () => {
         let result = memory.numToBlock(100);
 
         expect(result).toEqual([0, 0, 6, 4]);
+    });
+
+    it('Memory write Simple Test 1', () => {
+
+        memory.write(4000, 100);
+    });
+
+    it('Memory write Simple Test 2', () => {
+        
+        memory.write(4003, 422);
+    })
+
+    it('Memory read Simple test 1', () => {
+
+        let result = memory.read(4000);
+
+        expect(result).toBe(96);
+    });
+
+    it('Memory read Simple Test 2', () => {
+
+        let result = memory.read(4003);
+
+        expect(result).toBe(422);
     })
 });
