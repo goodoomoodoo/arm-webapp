@@ -56,6 +56,39 @@ class Memory {
 
     write(addr, value) {
 
+        let index = addr % 4;
+        let upperBlock = this.block[`${addr - index}`];
+        let valueBlock = this.numToBlock(value);
+
+        if (upperBlock === undefined)
+            this.block[`${addr - index}`] = [0, 0, 0, 0];
+
+        if (index !== 0) {
+
+            let lowerBlock = this.block[`${addr - index + 4}`];
+            let count = 0;
+
+            /** Check if the lower block exist */
+            if (lowerBlock === undefined)
+                this.block[`${addr - index + 4}`] = [0, 0, 0, 0];
+
+            /** Fill upper block */
+            for (let i = index; i < 4; i++) {
+                this.block[`${addr - index}`][i] = valueBlock[count++];
+            }
+
+            /** Fill lower block */
+            for (let i = 0; i < index; i++) {
+                this.block[`${addr - index + 4}`][i] = valueBlock[count++];
+            }
+
+        } else {
+
+            /** Fill upper block */
+            for (let i = index; i < 4; i++) {
+                this.block[`${addr - index}`][i] = valueBlock[i];
+            }
+        }
     }
 
     /**
