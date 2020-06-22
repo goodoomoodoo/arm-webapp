@@ -81,7 +81,7 @@ class Decoder {
                     name: instructionName,
                     rd: rd,
                     rSrc: rSrc,
-                    immd: parseInt(rSrc2.substring(1, rSrc.length))
+                    immd: parseInt(rSrc2.substring(1, rSrc2.length))
                 } :
                 {
                     name: instructionName,
@@ -153,7 +153,7 @@ class Decoder {
                 {
                     name: instructionName,
                     rd: rd,
-                    immd: rSrc
+                    immd: parseInt(rSrc.substring(1,rSrc.length))
                 } :
                 {
                     name: instructionName,
