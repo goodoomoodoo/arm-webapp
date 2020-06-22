@@ -27,7 +27,7 @@ describe('Register Simple Test', () => {
 
         expect(result).toMatchObject({
             name: 'add',
-            rd: 'r1',
+            rd: 0,
             rSrc: 0,
             rSrc2: 0
         });
@@ -49,7 +49,7 @@ describe('Register Intermediate Test', () => {
 
         expect(result).toMatchObject({
             name: 'add',
-            rd: 'r1',
+            rd: 0,
             rSrc: 0,
             rSrc2: 10
         });
