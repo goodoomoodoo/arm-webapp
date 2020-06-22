@@ -149,13 +149,20 @@ class Register {
     }
 
     read(args) {
+
+        let readOutput = Object.assign({}, args);
+
+        if (args.rd !== undefined) {
+            readOutput.rd = this.block[args.rd];
+        }
+
         if (args.rSrc !== undefined)
-            args.rSrc = this.block[args.rSrc];
+            readOutput.rSrc = this.block[args.rSrc];
 
         if (args.rSrc2 !== undefined)
-            args.rSrc2 = this.block[args.rSrc2];
+            readOutput.rSrc2 = this.block[args.rSrc2];
 
-        return args;
+        return readOutput;
     }
 }
 
