@@ -1,8 +1,11 @@
 import Decoder from './Decoder';
 import Register from './Register';
 import ALU from './ALU';
+import Memory from './Memory';
 
 class Simulation {
+
+    /** Note: All storage uses Big Endian */
 
     /**
      * Constructor of the simulator
@@ -13,6 +16,7 @@ class Simulation {
         this.instruction = instruction;
         this.register = new Register();
         this.alu = new ALU();
+        this.memory = new Memory();
     }
 
     step() {
@@ -27,9 +31,10 @@ class Simulation {
         let type = this.decoder.getInstructionType(currentInstruction);
         let args = this.decoder.getInstructionArgs(currentInstruction);
         let readOutput = this.register.read(args);
-        let aluOutput = 0;
 
         /** Execute */
+        let aluOutput = undefined;
+
         switch(type) {
             case 0:
                 aluOutput = this.alu.executeTypeZero(readOutput);
@@ -52,6 +57,51 @@ class Simulation {
         }
 
         /** Memory */
+        let memRead = 0;
+
+        if (type === 2) {
+
+            if (args.name === 'str' || args.name === 'strb') {
+                this.memory.write(aluOutput, readOutput.rd);
+            } else {
+                memRead = this.memory.read(aluOutput);
+            }
+        }
+
+        /** Write back */
+        if (type === 2) {
+
+            if (args.name === 'ldr') {
+
+                this.register[args.rd] = memRead;
+
+            } else if (args.name === 'ldrb') {
+
+                this.register[args.rd] = memRead & 0xf;
+            }
+        }
+
+        if (type === 1) {
+
+            this.register[args.rd] = aluOutput;
+        }
+
+        if (type === 4) {
+
+            if (args.immd)
+                this.register[args.rd] = args.immd;
+            else
+                this.register[args.rd] = readOutput.rSrc;
+        }
+
+        /** Branch/Increment */
+        this.register.pc++;
+
+        if (type === 0) {
+
+            if(aluOutput)
+                this.register.pc = labelLUT;
+        }
     }
 
     run() {
