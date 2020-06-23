@@ -1,11 +1,4 @@
-const INSTR_TYPE = {
-    0: [ 'b', 'beq', 'bne', 'bl', 'blt', 'ble', 'bgt', 'bge', 'bx' ],
-    1: [ 'add', 'and', 'asr', 'eor', 'lsl', 'lsr', 'mul', 
-        'orr', 'sub'],
-    2: [ 'ldr', 'ldrb', 'str', 'strb' ],
-    3: [ 'push', 'pop' ],
-    4: [ 'mov', 'mvn', 'cmp' ]
-};
+import {INSTR_TYPE} from './constants';
 
 class Decoder {
 
@@ -163,28 +156,6 @@ class Decoder {
         }
 
         return {};
-    }
-
-    /**
-     * Check if the instruction has arguments
-     * @param {String} instruction 
-     * @return {Boolean}
-     */
-    hasInstructionArgs(instruction) {
-
-        let indexOfArgs = instruction.indexOf(' ') + 1;
-
-        return indexOfArgs > instruction.length;
-    }
-    
-    /**
-     * Check if the instruction name is valid
-     * @param {String} instructionName 
-     * @return {Boolean}
-     */
-    isValidInstructionName(instructionName) {
-
-        return this.instructionLUT[`${instructionName}`] === undefined
     }
 
     /**
