@@ -7,7 +7,7 @@ class labelLUT {
     constructor(instruction) {
         this.LUT = {}
 
-        this.build(instruction);
+        this.newInstruction = this.build(instruction);
     }
 
     /**
@@ -29,7 +29,7 @@ class labelLUT {
                 /** Check if the line might contains instruction */
                 if (/\S/.test(newInstruction)) {
 
-                    instruction[i] = newInstruction;
+                    instruction[i] = newInstruction.trim();
                     this.LUT[labelName] = i;
 
                 }
@@ -38,11 +38,25 @@ class labelLUT {
 
                     /** Remove the label line */
                     instruction.splice(i, 1);
-                    this.LUT[labelName] = i + 1;
+                    this.LUT[labelName] = i;
                 }
             }
-
-            return instruction;
         }
+
+
+        return instruction;
+    }
+
+    getLabelessInstruction() {
+        return this.newInstruction;
+    }
+
+    lookup(label) {
+        if (this.LUT[label]) {
+            return this.LUT[label];
+        }
+        return -1;
     }
 }
+
+export default labelLUT;
