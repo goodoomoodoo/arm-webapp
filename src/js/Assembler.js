@@ -134,40 +134,84 @@ class Assembler {
 
         return new Promise((resolve, reject) => {
 
-            if (this.checkIsRegister(argv[0])) {
+            if (!this.checkIsRegister(argv[0])) {
+                return reject(new Error(`Invalid register name: expected `
+                    + `register name but found ${argv[0]}.`));
+            }
 
-                if (argv[1].charAt(0) === '[') {
+            /** Syntax Error: expect [ */
+            if (!argv[1].charAt(0) === '[') {
+                return reject(new Error('Invalid syntax: expected [ in the '
+                    + 'argument.'));
+            }
 
-                    /** Register is closed and no offset expected */
-                    if (argv[1].charAt(argv[1].length - 1) === ']') {
-                        
-                        argv[1] = argv[1].substring(1, argv[1].length - 2);
+            /** Bracket is closed after opened [ ] */
+            if (argv[1].charAt(argv[1].length - 1) === ']') {
 
-                        resolve(argv);
-                    }
-                    /** Register is not closed, expect an offset */
-                    else if (argv[2] !== undefined && 
-                            argv[2].charAt(argv[2].length - 1) === ']') {
-                        
-                        argv[1] = argv[1].substring(1, argv[1].length - 1);
-                        argv[2] = argv[2].substring(0, argv[2].length - 2);
-                        
-                        resolve(argv);
+                let arg1 = argv[1].substring(1, argv[1].length - 1);
 
-                    } else {
-                        reject(new Error('Invalid syntax: no offset found, '
-                            + 'expected ] in the argument.'));
+                /** Arg1 is not a register */
+                if (!this.checkIsRegister(arg1)) {
+                    return reject(new Error(`Invalid register name: expected `
+                         + `register name but found ${arg1}.`));
+                }
+                
+                /** Regular register */
+                if (argv[2] === undefined)
+                    return resolve(argv);
+                /** Post indexed operation */
+                else if (this.checkIsImmediate(argv[2]))
+                    return resolve(argv);
+                else
+                    return reject(new Error('Invalid syntax: expected offset'
+                        + ' to be immediate value.'));
+
+            }
+
+            /** Bracket is not closed properly */
+            if (argv[2] === undefined) {
+                return reject(new Error('Invalid syntax: no offset found, '
+                    + 'expected ] in the argument.'));
+            }
+            
+            /** Register is not closed, expect an offset */
+            if (argv.length < 4) {
+                
+                let arg2 = argv[2];
+                let lastChar = arg2.charAt(argv[2].length - 1);
+
+                /** Offset operation */
+                if (lastChar === ']') {
+
+                    arg2 = arg2.substring(0, arg2.length - 1);
+
+                    if (this.checkIsImmediate(arg2) 
+                        || this.checkIsRegister(arg2))
+                        return resolve(argv);
+                    else
+                        return reject(new Error('Invalid syntax: immediate '
+                            + `value or register expected but found ${arg2}.`));
+                }
+                /** Pre indexed operation */
+                else if (lastChar === '!') {
+                    
+                    if (arg2.charAt(argv[2].length - 2) === ']') {
+
+                        arg2 = arg2.substring(0, arg2.length - 2);
+
+                        return this.checkIsRegister(arg2)
+                            || this.checkIsImmediate(arg2) 
+                            ? resolve(argv)
+                            : reject(new Error('Invalid syntax: immediate '
+                            + `value or register expected but found ${arg2}.`));
                     }
 
                 } else {
-                    reject(new Error('Invalid syntax: expected [ in the '
-                        + 'argument.'))
+                    return reject(new Error('Invalid syntax: unable to resolve'
+                        + `${arg2}`));
                 }
+            } 
 
-            } else {
-                reject(new Error(`Invalid register name: expected register name`
-                    + ` but found ${argv[0]}.`));
-            }
         });
     }
 
@@ -212,12 +256,14 @@ class Assembler {
      */
     checkIsRegister(arg) {
 
+        let found = false;
+
         REGISTER_NAME.forEach(registerName => {
             if (arg === registerName)
-                return true;
+                found = true;
         });
 
-        return false;
+        return found;
     }
 
     /**
