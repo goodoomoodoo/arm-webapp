@@ -15,7 +15,7 @@ class labelLUT {
      * @param {String[]} instruction 
      */
     build(instruction) {
-        for (let i = 0; i < instruction.length; i++) {
+        for (let i = 0; i < instruction.length;) {
 
             let currentInstruction = instruction[i];
 
@@ -23,14 +23,13 @@ class labelLUT {
 
             if (index !== -1) {
                 let labelName = currentInstruction.substring(0, index);
-                let newInstruction = currentInstruction.substring(index + 1,
-                    currentInstruction.length);
+                let newInstruction = currentInstruction.substring(index + 1);
                 
                 /** Check if the line might contains instruction */
                 if (/\S/.test(newInstruction)) {
 
                     instruction[i] = newInstruction.trim();
-                    this.LUT[labelName] = i;
+                    this.LUT[labelName] = i++;
 
                 }
                 /** This line do not contain instruction */
@@ -40,6 +39,8 @@ class labelLUT {
                     instruction.splice(i, 1);
                     this.LUT[labelName] = i;
                 }
+            } else {
+                i++;
             }
         }
 
@@ -55,7 +56,7 @@ class labelLUT {
      * @param {String} label 
      */
     lookup(label) {
-        if (this.LUT[label]) {
+        if (this.LUT[label] !== undefined) {
             return this.LUT[label];
         }
         return -1;
