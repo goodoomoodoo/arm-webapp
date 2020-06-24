@@ -20,4 +20,4 @@ describe('Label Lookup Table Simple Test', () => {
         expect(lut.getLabelessInstruction())
             .toEqual(['mov r1, r2', 'add r1, r1, #2']);
     });
-})
+});
