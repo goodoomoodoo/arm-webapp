@@ -43,7 +43,6 @@ class labelLUT {
             }
         }
 
-
         return instruction;
     }
 
@@ -51,6 +50,10 @@ class labelLUT {
         return this.newInstruction;
     }
 
+    /**
+     * 
+     * @param {String} label 
+     */
     lookup(label) {
         if (this.LUT[label]) {
             return this.LUT[label];
