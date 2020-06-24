@@ -6,6 +6,7 @@ import Memory from './Memory';
 class Simulation {
 
     /** Note: All storage uses Big Endian */
+    /** Note: User defined variable is not supported */
 
     /**
      * Constructor of the simulator
