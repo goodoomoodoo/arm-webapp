@@ -141,4 +141,67 @@ describe('Assembler Simple Test', () => {
 
         expect(result).toEqual(['r1', '[r2', 'r3]']);
     });
+
+    it('Assembler validateTypeFourInstruction Simple Test', async () => {
+
+        let result = await assembler.validateTypeFourInstruction('mov r1, r2');
+
+        expect(result).toEqual(['r1', 'r2']);
+
+        result = await assembler.validateTypeFourInstruction('mov r1, #10');
+
+        expect(result).toEqual(['r1', '#10']);
+
+        try {
+            result = await assembler.validateTypeFourInstruction('mov #1, r2');
+        } catch (error) {
+            expect(error).toBeInstanceOf(Error);
+        }
+    });
+
+    it('Assembler validateTypeThreeInstruction', async () => {
+
+        let result = await assembler.validateTypeThreeInstruction('push {r1}');
+
+        expect(result).toEqual(['r1']);
+
+        result = await assembler
+                        .validateTypeThreeInstruction('push {r1, r2, pc}');
+
+        expect(result).toEqual(['r1', 'r2', 'pc']);
+
+    });
+
+    it('Assembler validateInstruction Simple Test', async () => {
+
+        let result = await assembler.validateInstruction('mov r1, r2');
+
+        expect(result).toEqual(['mov', 'r1', 'r2']);
+
+        try {
+            await assembler.validateInstruction('mov mov');
+        } catch (error) {
+            expect(error).toBeInstanceOf(Error);
+            expect(error.message)
+                .toBe('Invalid register name: expected register name but found'
+                    + ' mov.');
+        }
+    });
+
+    it('Assembler validate Simple Test', async () => {
+
+        let instruction = ['mov r1, #10', 'mov r2, #10', 'add r1, r1, r2', 
+            'sub r1, r1, #5', 'str r1, [r2]'];
+        let testAssembler = new Assembler(instruction);
+
+        let result = await testAssembler.validate();
+
+        expect(result).toEqual([
+            ['mov', 'r1', '#10'],
+            ['mov', 'r2', '#10'],
+            ['add', 'r1', 'r1', 'r2'],
+            ['sub', 'r1', 'r1', '#5'],
+            ['str', 'r1', '[r2]']
+        ]);
+    });
 })

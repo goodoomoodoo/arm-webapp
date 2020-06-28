@@ -1,73 +1,41 @@
 import Decoder from '../src/js/Decoder';
 
 describe('Decoder Simple Test', () => {
-    let decoder = new Decoder();
+    
+    it('Decoder readInstructionRegValue Simple Test', () => {
 
-    it('getInstructionName Simple Test', () => {
+        let instruction = [
+            ['mov', 'r1', '#10'],
+            ['mov', 'r2', 'r1'],
+            ['add', 'r1', 'r1', 'r2'],
+            ['str', 'r1', '[r2]']
+        ];
 
-        expect(decoder.getInstructionName('mov r1, #0')).toBe('mov');
-    });
+        let decoder = new Decoder(instruction);
 
-    it('getInstructionType Simple Test', () => {
+        decoder.next();
 
-        expect(decoder.getInstructionType('mov r1, #0')).toBe(4);
-    });
+        let result = decoder.readInstructionRegValue();
 
-    it('getInstructionArgs Type 0 Simple Test', () => {
+        expect(result).toEqual([10]);
 
-        expect(decoder.getInstructionArgs('b loop'))
-            .toMatchObject({name: 'b', label: 'loop'});
-    });
+        decoder.next();
 
-    it('getInstructionType Type 1 Simple Test 0', () => {
+        result = decoder.readInstructionRegValue();
 
-        expect(decoder.getInstructionArgs('add r1, r2, r3'))
-            .toMatchObject({
-                name: 'add',
-                rd: 'r1',
-                rSrc: 'r2',
-                rSrc2: 'r3'
-            });
-    });
+        expect(result).toEqual([0]);
 
-    it('getInstructionType Type 1 Simple Test 1', () => {
+        decoder.next();
 
-        expect(decoder.getInstructionArgs('add r1, r2, #3'))
-            .toMatchObject({
-                name: 'add',
-                rd: 'r1',
-                rSrc: 'r2',
-                immd: 3
-            });
-    });
+        result = decoder.readInstructionRegValue();
 
-    it('getInstructionType Type 2 Simple Test 1', () => {
+        expect(result).toEqual([0, 0]);
 
-        expect(decoder.getInstructionArgs('ldr r1, [r0]'))
-            .toMatchObject({
-                name: 'ldr',
-                rd: 'r1',
-                rSrc: 'r0'
-            });
-    });
+        decoder.next();
 
-    it('getInstructionType Type 2 Simple Test 2', () => {
+        result = decoder.readInstructionRegValue();
 
-        expect(decoder.getInstructionArgs('ldr r1, [r0, #10]'))
-            .toMatchObject({
-                name: 'ldr',
-                rd: 'r1',
-                rSrc: 'r0',
-                offset: 10
-            });
-    });
+        expect(result).toEqual([0, 0]);
 
-    it('getInstructiontype Type 3 Simple Test', () => {
-
-        expect(decoder.getInstructionArgs('push {r1}'))
-            .toMatchObject({
-                name: 'push',
-                rArr: ['r1']
-            });
     })
 });
