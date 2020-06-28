@@ -11,7 +11,7 @@ class labelLUT {
     }
 
     /**
-     * 
+     * Return labeless instruction
      * @param {String[]} instruction 
      */
     build(instruction) {
