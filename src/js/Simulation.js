@@ -1,3 +1,4 @@
+import Assembler from './Assembler';
 import Decoder from './Decoder';
 import Register from './Register';
 import ALU from './ALU';
@@ -13,38 +14,46 @@ class Simulation {
      * @param {String[]} instruction 
      */
     constructor(instruction) {
-        this.decoder = new Decoder();
-        this.instruction = instruction;
-        this.register = new Register();
+        this.assembler = new Assembler(instruction);
+        this.decoder = undefined;
         this.alu = new ALU();
         this.memory = new Memory();
+        this.assembled = false;
+    }
+
+    assemble = async () => {
+        try {
+            let instruction = await this.assembler.validate();
+            this.decoder = new Decoder(instruction);
+            this.assembled = true;
+        } catch (error) {
+            throw error;
+        }
     }
 
     step() {
-        // Check syntax
-        // this.debug();
 
-        /** Fetch */
-        let pc = this.register.pc;
-        let currentInstruction = this.instruction[pc];
+        if (this.assembled && this.decoder.hasNext())
+            /** Get next instruction and increment PC */
+            this.decoder.next();
+        else
+            return 1;
 
-        /** Decode */
-        let type = this.decoder.getInstructionType(currentInstruction);
-        let args = this.decoder.getInstructionArgs(currentInstruction);
-        let readOutput = this.register.read(args);
+        let type = this.decoder.getInstructionType();
+        let name = this.decoder.getInstructionName();
+        let argv = this.decoder.currentInstruction;
+        let signal = this.decoder.getControlSignal();
+        let readOutput = this.decoder.readInstructionRegValue();
 
         /** Execute */
         let aluOutput = undefined;
 
         switch(type) {
             case 0:
-                aluOutput = this.alu.executeTypeZero(readOutput);
+                aluOutput = this.alu.executeTypeZero(name);
                 break;
             case 1:
-                if (args.immd !== undefined)
-                    aluOutput = this.alu.executeImmediateTypeOne(readOutput);
-                else
-                    aluOutput = this.alu.executeTypeOne(readOutput);
+                aluOutput = this.alu.executeTypeOne(name, readOutput);
                 break;
             case 2:
                 aluOutput = this.alu.executeTypeTwo(readOutput);
@@ -60,58 +69,46 @@ class Simulation {
         /** Memory */
         let memRead = 0;
 
-        if (type === 2) {
+        if (signal.memWrite) {
 
-            if (args.name === 'str' || args.name === 'strb') {
-                this.memory.write(aluOutput, readOutput.rd);
-            } else {
+            if (signal.postIndex)
+                this.memory.write(readOutput[1], readOutput[0]);
+            else
+                this.memory.write(aluOutput, readOutput[0]);
+        }
+        
+        if (signal.memRead) {
+
+            if (signal.postIndex)
+                memRead = this.memory.read(readOutput[1]);
+            else
                 memRead = this.memory.read(aluOutput);
-            }
         }
 
         /** Write back */
-        if (type === 2) {
+        if (signal.writeBack) {
 
-            if (args.name === 'ldr') {
-
-                this.register[args.rd] = memRead;
-
-            } else if (args.name === 'ldrb') {
-
-                this.register[args.rd] = memRead & 0xf;
+            if (signal.memRead) {
+                this.decoder.writeRegister(argv[1], memRead);
+            } else if (aluOutput !== undefined) {
+                this.decoder.writeRegister(argv[1], aluOutput);
+            } else {
+                this.decoder.writeRegister(argv[1], readOutput[0]);
             }
         }
 
-        if (type === 1) {
-
-            this.register[args.rd] = aluOutput;
-        }
-
-        if (type === 4) {
-
-            if (args.immd)
-                this.register[args.rd] = args.immd;
-            else
-                this.register[args.rd] = readOutput.rSrc;
-        }
-
-        /** Branch/Increment */
-        this.register.pc++;
-
-        if (type === 0) {
-
-            if(aluOutput)
-                this.register.pc = labelLUT;
+        /** Branch*/
+        if (signal.jump && aluOutput) {
+            this.decoder.writeRegister(
+                'pc',
+                this.assembler.lookup(argv[1])
+            );
         }
     }
 
     run() {
         // Check syntax
         // this.debug();
-    }
-
-    debug() {
-
     }
 }
 

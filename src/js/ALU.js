@@ -9,10 +9,9 @@ class ALU {
         }
     }
 
-    executeTypeZero(args) {
-        let instructionName = args.name;
+    executeTypeZero(argv) {
 
-        switch (instructionName) {
+        switch (argv[0]) {
             case 'b':
                 return true;
             case 'beq':
@@ -34,55 +33,30 @@ class ALU {
         }
     }
 
-    executeImmediateTypeOne(args) {
-        let instructionName = args.name;
+    executeTypeOne(name, argv) {
 
-        switch (instructionName) {
+        switch (name) {
             case 'add':
-                return args.rSrc + args.immd;
+                return argv[0] + argv[1];
             case 'sub':
-                return args.rSrc - args.immd;
+                return argv[0] - argv[1];
             case 'asr':
-                return args.rSrc >> args.immd;
+                return argv[0] >> argv[1];
             case 'eor':
-                return args.rSrc ^ args.immd;
+                return argv[0] ^ argv[1];
             case 'lsl':
-                return args.rSrc << args.immd;
+                return argv[0] << argv[1];
             case 'lsr':
-                return args.rSrc >>> args.immd;
+                return argv[0] >>> argv[1];
             case 'mul':
-                return args.rSrc * args.immd;
+                return argv[0] * argv[1];
             case 'orr':
-                return args.rSrc | args.immd;
+                return argv[0] | argv[1];
         }
     }
 
-    executeTypeOne(args) {
-        let instructionName = args.name;
-
-        switch (instructionName) {
-            case 'add':
-                return args.rSrc + args.rSrc2;
-            case 'sub':
-                return args.rSrc - args.rSrc2;
-            case 'asr':
-                return args.rSrc >> args.rSrc2;
-            case 'eor':
-                return args.rSrc ^ args.rSrc2;
-            case 'lsl':
-                return args.rSrc << args.rSrc2;
-            case 'lsr':
-                return args.rSrc >>> args.rSrc2;
-            case 'mul':
-                return args.rSrc * args.rSrc2;
-            case 'orr':
-                return args.rSrc | args.rSrc2;
-        }
-    }
-
-    executeTypeTwo(args) {
-        return args.offset === undefined ? args.rBase : 
-            args.rBase + args.offset;
+    executeTypeTwo(argv) {
+        return argv[2] === undefined ? argv[1] : argv[1] + argv[2];
     }
 
     executeTypeThree(args) {
