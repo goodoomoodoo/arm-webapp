@@ -1,9 +1,17 @@
 import {INSTR_TYPE} from './constants';
+import Register from './Register';
 
 class Decoder {
 
-    constructor() {
+    /**
+     * 
+     * @param {String[][]} instruction 
+     */
+    constructor(instruction) {
         this.instructionLUT = this.build();
+        this.register = new Register();
+        this.instruction = instruction;
+        this.currentInstruction = undefined;
     }
 
     build() {
@@ -18,24 +26,88 @@ class Decoder {
         return instructionLUT;
     }
 
-    /**
-     * e.g. instructionHead = 'mov'
-     * @return 1
-     */
-    getInstructionType(instruction) {
-        return this.instructionLUT[this.getInstructionName(instruction)];
+    getInstructionName() {
+        return this.currentInstruction[0];
     }
 
     /**
-     * Returns the instruction of a line
-     * @param {String} instruction 
-     * @return {Promise(resolve String)} instruction name
+     * e.g. instructionHead = 'mov'
+     * @return {Number}
      */
-    getInstructionName(instruction) {
+    getInstructionType() {
+        return this.instructionLUT[this.currentInstruction[0]];
+    }
 
-        let instructionName = instruction.split(' ')[0];
+    /**
+     * Get control signal of current instruction
+     */
+    getControlSignal() {
+        
+        let type = this.getInstructionType();
+        let instructionName = this.currentInstruction[0];
+        let arg1 = this.currentInstruction[1];
+        let arg2 = this.currentInstruction[2];
+        let control = {
+            writeBack: true,
+            memRead: false,
+            memWrite: false,
+            jump: false,
+            preIndex: false,
+            postIndex: false
+        };
 
-        return instructionName;
+        switch (type) {
+            case 0:
+                control.writeBack = false;
+                control.jump = true;
+                break;
+            case 1:
+                break;
+            case 2:
+                if (instructionName.charAt(0) === 's') {
+                    control.writeBack = false;
+                    control.memWrite = true;
+                } else {
+                    control.memRead = true;
+                }
+
+                if (arg1.charAt(arg1.length - 1) !== ']') {
+
+                    if (arg2.charAt(arg2.length - 1) === '!') {
+                        control.preIndex = true;
+                    }
+
+                } else {
+
+                    if (arg2)
+                        control.postIndex = true;
+                }
+
+                break;
+            case 3:
+                break;
+            case 4:
+                break;  
+        }
+
+        return control;
+    }
+
+    /**
+     * 
+     * @param {Number} value 
+     */
+    setPC(value) {
+        this.register.pc = value;
+    }
+
+    next() {
+        this.currentInstruction = this.instruction[this.register.pc];
+        this.register.pc++;
+    }
+
+    hasNext() {
+        return this.instruction[this.register.pc] !== undefined;
     }
 
     /**
@@ -44,126 +116,84 @@ class Decoder {
      * @param {Number} instructionType 
      * @param {String} instruction 
      */
-    getInstructionArgs(instruction) {
+    readInstructionRegValue() {
 
-        let args = instruction.substring(instruction.indexOf(' ') + 1);
+        let type = this.getInstructionType();
+        let output = [];
 
-        args = args.replace(/\s/g, '');
+        switch (type) {
+            case 0:
+                break;
+            case 1:
+                output.push(
+                    this.register[this.currentInstruction[2]]
+                );
 
-        let arr = args.split(',');
+                if (this.currentInstruction[3].charAt(0) !== '#')
+                    output.push(
+                        this.register[this.currentInstruction[3]]
+                    );
+                else
+                    output.push(
+                        parseInt(
+                            this.currentInstruction[3].substring(1)
+                        )
+                    );
+                
+                break;
+            case 2:
+                output.push(
+                    this.register[this.currentInstruction[1]]
+                );
 
-        let instructionName = this.getInstructionName(instruction);
+                let arg2 = this.currentInstruction[2];
+                let arg3 = this.currentInstruction[3];
+                arg2 = arg2.substring(1);
 
-        let instructionType = this.getInstructionType(instruction);
+                if (arg2.charAt(arg2.length - 1) === ']')
+                    arg2 = arg2.substring(0, arg2.length - 1);
+                else if (arg3.charAt(arg3.length - 1) === ']')
+                    arg3 = arg3.substring(0, arg3.length - 1);
+                else
+                    arg3 = arg3.substring(0, arg3.length - 2);
+                
+                output.push(
+                    this.register[arg2]
+                );
 
-        if( instructionType == 0 ) {
-            return {
-                name: instructionName,
-                label: arr[ 0 ]
-            };
+                if (arg3)
+                    output.push(
+                        this.register[arg3]
+                    );
+
+                break;
+            case 3:
+                // Too lazy to implement right now
+                break;
+            case 4:
+                if (this.currentInstruction[2].charAt(0) !== '#')
+                    output.push(
+                        this.register[this.currentInstruction[2]]
+                    );
+                else
+                    output.push(
+                        parseInt(
+                            this.currentInstruction[2].substring(1)
+                        )
+                    );
+                break;
         }
 
-        if( instructionType == 1 ) {
-
-            let rd = arr[ 0 ].toLowerCase();
-            let rSrc = arr[ 1 ].toLowerCase();
-            let rSrc2 = arr[ 2 ].toLowerCase();
-
-            return this.isImmediateValue(rSrc2) ?
-                {
-                    name: instructionName,
-                    rd: rd,
-                    rSrc: rSrc,
-                    immd: parseInt(rSrc2.substring(1, rSrc2.length))
-                } :
-                {
-                    name: instructionName,
-                    rd: rd,
-                    rSrc: rSrc,
-                    rSrc2: rSrc2
-                };
-        }
-
-        if( instructionType == 2 ) {
-
-            let rd = arr[ 0 ].toLowerCase();
-            let rSrc = arr[ 1 ].toLowerCase();
-            let offset = arr[ 2 ];
-            
-            /** Remove '[' in the front of base register */
-            rSrc = rSrc.substring( 1, rSrc.length );
-
-            /** No offset found */
-            if( arr[2] === undefined ) {
-
-                /** Remove ']' at the end of base register */
-                rSrc = rSrc.substring( 0, rSrc.length - 1 );
-
-                return {
-                    name: instructionName,
-                    rd: rd,
-                    rSrc: rSrc
-                };
-            } 
-            /** Offset found */
-            else {
-
-                /** Remove ']' at the end of offset value */
-                offset = offset.substring( 1, offset.length - 1 ).toLowerCase();
-
-                return {
-                    name: instructionName,
-                    rd: rd,
-                    rSrc: rSrc,
-                    offset: parseInt(offset)
-                };
-            }
-        }
-
-        if( instructionType == 3 ) {
-
-            /** Remove {} in the instruction */
-            if (arr.length > 1) {
-                arr[0] = arr[0].substring(1,arr[0].length);
-                arr[arr.length - 1] = arr[arr.length - 1].substring(0, 
-                    arr[arr.length - 1].length - 1);
-            } else {
-                arr[0] = arr[0].substring(1, arr[0].length - 1);
-            }
-
-            return {
-                name: instructionName,
-                rArr: arr
-            };
-        }
-
-        if (instructionType == 4) {
-            
-            let rd = arr[0].toLowerCase();
-            let rSrc = arr[1].toLowerCase();
-
-            return this.isImmediateValue(rSrc) ? 
-                {
-                    name: instructionName,
-                    rd: rd,
-                    immd: parseInt(rSrc.substring(1,rSrc.length))
-                } :
-                {
-                    name: instructionName,
-                    rd: rd,
-                    rSrc: rSrc
-                }
-        }
-
-        return {};
+        return output;
     }
 
     /**
-     * Check if the register argument is immediate value
-     * @param {String} arg 
+     * 
+     * @param {String} name 
+     * @param {Number} value 
      */
-    isImmediateValue(arg) {
-        return arg.charAt(0) === '#';
+    writeRegister(name, value) {
+        this.register[name] = value;
     }
 }
 
