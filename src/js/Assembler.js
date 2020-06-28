@@ -39,22 +39,103 @@ class Assembler {
         return instruction;
     }
 
-    validate() {
+    /**
+     * @return {String[][]}
+     */
+    validate = async () => {
 
         let labelessInstruction = this.lut.getLabelessInstruction();
         let trimmedInstruction = this.trimInstruction(labelessInstruction);
+        let assembledInstruction = [];
 
-        for (let i = 0; i < trimmedInstruction.length; i++) {
+        for (let i = 0; i < trimmedInstruction.length; i+=3) {
 
-            let currentInstruction = trimmedInstruction[i];
+            try {
+                let instruction1 = trimmedInstruction[i];
+                let instruction2 = trimmedInstruction[i + 1];
+                let instruction3 = trimmedInstruction[i + 2];
 
-            /** Note: Type validation should be run after name validation */
+                let argAll = [];
+
+                argAll.push(
+                    this.validateInstruction(instruction1)
+                );
+
+                if (instruction2)
+                    argAll.push(
+                        this.validateInstruction(instruction2)
+                    );
+
+                if (instruction3)
+                    argAll.push(
+                        this.validateInstruction(instruction3)
+                    );
+
+                let argv = await Promise.all(argAll);
+
+                assembledInstruction =
+                        assembledInstruction.concat(argv);
+
+            } catch (error) {
+                throw error;
+            }
         }
+
+        return assembledInstruction;
     }
 
     /**
      * 
-     * @param {String} instruction 
+     * @param {String} instruction
+     */
+    validateInstruction = async instruction => {
+
+        try {
+            let instructionName = await 
+                this.validateInstructionName(instruction);
+
+            let instructionArg = undefined;
+
+            
+            switch(this.instructionLUT[instructionName]) {
+                case 0:
+                    instructionArg = await
+                        this.validateTypeZeroInstruction(instruction);
+                    break;
+                case 1:
+                    instructionArg = await
+                        this.validateTypeOneInstruction(instruction);
+                    break;
+                case 2:
+                    instructionArg = await
+                        this.validateTypeTwoInstruction(instruction);
+                    break;
+                case 3:
+                    instructionArg = await
+                        this.validateTypeThreeInstruction(instruction);
+                    break;
+                case 4:
+                    instructionArg = await
+                        this.validateTypeFourInstruction(instruction);
+                    break;
+                default:
+                    break;
+            }
+
+            instructionArg.splice(0, 0, instructionName);
+
+            return instructionArg;
+
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Validate the instruction name
+     * Note: added guard to undefined value due to the design of the algorithm
+     * @param {String} instruction
+     * @return {Promise<String>}
      */
     validateInstructionName(instruction) {
 
@@ -71,6 +152,7 @@ class Assembler {
     /**
      * Validate the Type 0 instruction and return label name
      * @param {String} instruction 
+     * @return {Promise<String[]>}
      */
     validateTypeZeroInstruction(instruction) {
 
@@ -97,6 +179,11 @@ class Assembler {
         });
     }
 
+    /**
+     * 
+     * @param {String} instruction 
+     * @return {Promise<String[]>}
+     */
     validateTypeOneInstruction(instruction) {
 
         let argv = this.getInstructionArgs(instruction);
@@ -128,6 +215,11 @@ class Assembler {
         })
     }
 
+    /**
+     * 
+     * @param {String} instruction 
+     * @return {Promise<String[]>}
+     */
     validateTypeTwoInstruction(instruction) {
 
         let argv = this.getInstructionArgs(instruction);
@@ -212,6 +304,76 @@ class Assembler {
                 }
             } 
 
+        });
+    }
+
+    /**
+     * 
+     * @param {String} instruction 
+     * @return {Promise<String[]>}
+     */
+    validateTypeThreeInstruction(instruction) {
+
+        /** Register list range not supported */
+        
+        let argv = this.getInstructionArgs(instruction);
+
+        return new Promise((resolve, reject) => {
+
+            let firstChar = argv[0].charAt(0);
+            let lastArg = argv[argv.length - 1];
+            let lastChar = lastArg.charAt(lastArg.length - 1);
+
+            if (firstChar !== '{') {
+                return reject(new Error('Invalid syntax: register list should'
+                    + 'start with {'));
+            }
+
+            if (lastChar !== '}') {
+                return reject(new Error('Invalid syntax: register list should'
+                    + 'be closed with }'));
+            }
+
+            argv[0] = argv[0].substring(1);
+            lastArg = argv[argv.length - 1];
+            argv[argv.length - 1] = lastArg
+                                    .substring(0, lastArg.length - 1);
+
+            argv.forEach(arg => {
+
+                if (!this.checkIsRegister(arg)) {
+                    return reject(new Error(`Invalid register name: expected `
+                        + `register name but found ${arg}.`));
+                }
+            });
+
+            return resolve(argv);
+        })
+    }
+
+    /**
+     * 
+     * @param {String} instruction 
+     * @return {Promise<String[]>}
+     */
+    validateTypeFourInstruction(instruction) {
+
+        let argv = this.getInstructionArgs(instruction);
+
+        return new Promise((resolve, reject) => {
+
+            if (!this.checkIsRegister(argv[0])) {
+                return reject(new Error(`Invalid register name: expected `
+                    + `register name but found ${argv[0]}.`));
+            }
+
+            if (!this.checkIsRegister(argv[1])
+                && !this.checkIsImmediate(argv[1])) {
+                return reject(new Error(`Invalid syntax: expected a `
+                    + `register or an immediate value but found ${argv[1]}.`));
+            } 
+
+            return resolve(argv);
         });
     }
 
