@@ -1,6 +1,5 @@
 import Assembler from './Assembler';
 import Decoder from './Decoder';
-import Register from './Register';
 import ALU from './ALU';
 import Memory from './Memory';
 
