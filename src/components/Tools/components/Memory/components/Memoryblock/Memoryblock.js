@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 
-import '../../../styles/Rblock.css';
+import './Memoryblock.css';
 
-class Mblock extends Component {
+class Memoryblock extends Component {
     render() {
         return (
-             <div className="Rblock">
+             <div className="Memoryblock">
 
                 <div>{ this.props.addr.toString( 16 ) }</div>
-                <div className="Rblock-val">
+                <div className="Memoryblock-val">
                     { 
                         this.props.base === 'Decimal' &&
                         this.props.value.toString() 
@@ -27,4 +27,4 @@ class Mblock extends Component {
     }
 }
 
-export default Mblock;
+export default Memoryblock;

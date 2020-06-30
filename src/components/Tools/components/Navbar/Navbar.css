@@ -1,10 +1,10 @@
-.BaseBar {
+.Navbar {
     position: relative;
     width: 100%;
     border-bottom: 1px solid #ccc;
 }
 
-.BaseBar button {
+.Navbar button {
     background: white;
     font-size: 1em;
     padding: .5em;
@@ -13,11 +13,11 @@
     margin-left: 2px;
 }
 
-.BaseBar button:hover {
+.Navbar button:hover {
     background: #f5f5f5;
 }
 
-.BaseBar button:active {
+.Navbar button:active {
     background: #e0e0e0;
 }
 

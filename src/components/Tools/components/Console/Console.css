@@ -1,25 +1,18 @@
-.Log {
+.Console {
     position: relative;
     width: 100%;
     min-width: 23em;
+    margin-top: 5em;
 }
 
-.Log h1 {
-    margin-left: .25em;
-    font-size: 1.5em;
-    font-weight: normal;
-    margin-bottom: 1em;
-    color: #222;
-}
-
-.LogTitle {
+.ConsoleTitle {
     position: relative;
     width: 100%;
     border-bottom: 1px solid #ccc;
     margin-bottom: 1em;
 }
 
-.LogTitle h2 {
+.ConsoleTitle h2 {
     margin: 0;
     color: #555;
     padding: .5em;
@@ -27,13 +20,13 @@
     font-weight: normal;
 }
 
-.LogBox {
+.ConsoleBox {
     position: relative;
     margin-bottom: 3vh;
     border-radius: 5px;
 }
 
-.Log h3 {
+.Console h3 {
     margin: 0;
     margin-left: 1.5em;
     padding-left: .75em;
@@ -44,39 +37,39 @@
     font-weight: normal;
 }
 
-.LogBox h3:first-child {
+.ConsoleBox h3:first-child {
     padding-top: 3px;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
 }
 
-.LogBox h3:last-child {
+.ConsoleBox h3:last-child {
     padding-bottom: 5px;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
 }
 
-.LogBox .Error {
+.ConsoleBox .Error {
     background: rgb(253, 222, 222);
     color: rgb(255, 45, 45);
 }
 
-.Log .Success {
+.Console .Success {
     color: #555;
 }
 
-.LogInstruction {
+.ConsoleInstruction {
     position: relative;
     margin-left: 1.5em;
     color: #555;
 
 }
 
-.LogInstruction span:first-child {
+.ConsoleInstruction span:first-child {
     position: relative;
     padding-left: .75em;
 }
 
-.LogInstruction span {
+.ConsoleInstruction span {
     padding-left: .5em;
 }

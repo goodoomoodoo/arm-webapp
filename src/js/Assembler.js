@@ -25,6 +25,14 @@ class Assembler {
     }
 
     /**
+     * @return {String[]}
+     */
+    getPureInstruction() {
+        let labelessInstruction = this.lut.getLabelessInstruction();
+        return this.trimInstruction(labelessInstruction);
+    }
+
+    /**
      * Remove empty line, whitespaces, and tabs
      * @param {String[]} instruction 
      * @return {String[]}
@@ -44,8 +52,7 @@ class Assembler {
      */
     validate = async () => {
 
-        let labelessInstruction = this.lut.getLabelessInstruction();
-        let trimmedInstruction = this.trimInstruction(labelessInstruction);
+        let trimmedInstruction = this.getPureInstruction();
         let assembledInstruction = [];
 
         for (let i = 0; i < trimmedInstruction.length; i+=3) {
@@ -97,7 +104,7 @@ class Assembler {
             let instructionArg = undefined;
 
             
-            switch(this.instructionLUT[instructionName]) {
+            switch (this.instructionLUT[instructionName]) {
                 case 0:
                     instructionArg = await
                         this.validateTypeZeroInstruction(instruction);

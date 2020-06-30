@@ -1,40 +1,20 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import '../styles/Log.css';
+import './Console.css';
 
-class Log extends Component {
+class Console extends Component {
 
     render() {
         return (
-            <div className="Log">
-                <h1>Log</h1>
-                <div className="LogTitle">
+            <div className="Console">
+                <div className="ConsoleTitle">
                     <h2>Console Output</h2>
                 </div>
-                <div className="LogBox">
-                    {
-                        this.props.console.output.msgArr === undefined &&
-                        <h3>No Output.</h3>
-                    }
-                    {
-                        this.props.console.output.msgArr !== undefined &&
-                        this.props.console.output.exitCode !== 0 &&
-                        this.props.console.output.msgArr.map( ( msg, i ) => {
-                            return (
-                            <h3 className="Error" key={i}>{msg}</h3>
-                            )
-                        })
-                    }
-                    {
-                        this.props.console.output.msgArr !== undefined &&
-                        this.props.console.output.exitCode === 0 &&
-                        <h3 className="Success">
-                            {this.props.console.output.msgArr[ 0 ]}
-                        </h3>
-                    }
+                <div className="ConsoleBox">
+                    <ConsoleError error={this.props.console.error} />
                 </div>
-                <div className="LogTitle">
+                <div className="ConsoleTitle">
                     <h2>Current Instruction</h2>
                 </div>
                 {
@@ -43,7 +23,7 @@ class Log extends Component {
                 }
                 {
                     this.props.console.instr !== undefined &&
-                    <div className="LogInstruction">
+                    <div className="ConsoleInstruction">
                         <span className="Instruction">
                             {this.props.console.instr.iname}
                         </span>
@@ -67,8 +47,21 @@ class Log extends Component {
     }
 }
 
+const ConsoleError = (props) => {
+    const error = props.error;
+
+    if (error.message === undefined)
+        return <h3>No output.</h3>
+    else if (error.exitCode === 1)
+        return <h3 className='Error'>{error.message}</h3>
+    else if (error.exitCode === 2)
+        return <h3 className='Error'>{error.message}</h3>
+    else
+        return <h3 className='Success'>{error.message}</h3>
+}
+
 const mapStateToProps = state => {
     return { console: state.console };
 }
 
-export default connect( mapStateToProps )( Log );
+export default connect( mapStateToProps )( Console );

@@ -32,11 +32,13 @@ class Simulation {
 
     step() {
 
-        if (this.assembled && this.decoder.hasNext())
+        if (!this.assembled)
+            return 1;
+        if (!this.decoder.hasNext())
+            return 2;
+        else
             /** Get next instruction and increment PC */
             this.decoder.next();
-        else
-            return 1;
 
         let type = this.decoder.getInstructionType();
         let name = this.decoder.getInstructionName();
@@ -103,6 +105,8 @@ class Simulation {
                 this.assembler.lookup(argv[1])
             );
         }
+
+        return 0;
     }
 
     run() {

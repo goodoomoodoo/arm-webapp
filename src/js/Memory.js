@@ -1,3 +1,6 @@
+import store from '../redux/store/index';
+import {setStack} from '../redux/actions';
+
 class Memory {
     /** Note: each block is 4 byte and address is bounded by 32 bits */
 
@@ -89,6 +92,14 @@ class Memory {
                 this.block[`${addr - index}`][i] = valueBlock[i];
             }
         }
+
+        store.dispatch(
+            setStack(
+                {
+                    block: this.block
+                }
+            )
+        );
     }
 
     /**

@@ -23,8 +23,11 @@ const initialState = {
     lr: 0,
     pc: 0x8000
   },
-  stack: {},
-  console: { output: {}, instr: undefined }
+  block: {},
+  console: {
+      error: {},
+      instruction: {}
+  }
 }
 
 const rootReducer = ( state = initialState, action ) => {
@@ -34,20 +37,19 @@ const rootReducer = ( state = initialState, action ) => {
   }
 
   if( action.type === SET_STACK ) {
-    let newStack = Object.assign( {}, action.payload );
-    return Object.assign( {}, state, { stack: newStack } );
+    return Object.assign( {}, state, action.payload );
   }
 
   if( action.type === SET_CONSOLE_OUTPUT ) {
-    let newOutput = Object.assign( {}, state.console, 
-      { output: action.payload } );
-    return Object.assign( {}, state, { console: newOutput });
+    let newError = Object.assign( {}, state.console, 
+      { error: action.payload } );
+    return Object.assign( {}, state, { console: newError });
   }
 
   if( action.type === SET_CONSOLE_INSTRUCTION ) {
-    let newInstr = Object.assign( {}, state.console, 
-      { instr: action.payload.instr } );
-    return Object.assign( {}, state, { console: newInstr } );
+    let newInstruction = Object.assign( {}, state.console, 
+      { instruction: action.payload } );
+    return Object.assign( {}, state, { console: newInstruction } );
   }
 
   return state;

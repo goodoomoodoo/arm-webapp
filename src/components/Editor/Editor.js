@@ -3,11 +3,11 @@ import { connect } from 'react-redux';
 
 import { setConsoleInstruction, 
     setConsoleOutput } from '../../redux/actions/index';
-import Instruction from '../../js/Instruction';
+import Simulation from '../../js/Simulation';
 
-import '../../styles/DevContainer.css';
+import './Editor.css';
 
-class DevContainer extends Component {
+class Editor extends Component {
 
     constructor( props ) {
 
@@ -15,15 +15,17 @@ class DevContainer extends Component {
 
         this.state = {
             error: '',
-            instruction: "",
+            instruction: '',
+            pureInstruction: [],
             line: 1,
-            instrCounter: 0             // Instruction index
+            statusCode: 0
         };
 
+        this.simulation = undefined;
         this.handleInput = this.handleInput.bind( this );
         this.handleTab   = this.handleTab.bind( this );
         this.handleRun   = this.handleRun.bind( this );
-        this.handleDebug = this.handleDebug.bind( this );
+        this.handleBuild = this.handleBuild.bind( this );
         this.handleStep  = this.handleStep.bind( this );
     }
 
@@ -58,69 +60,61 @@ class DevContainer extends Component {
         this.setState({ line: lineCount });
     }
 
-    handleDebug() {
+    handleBuild() {
 
-        let instrArr = this.state.instruction.split( '\n' );
+        let instructionArray = this.state.instruction.split( '\n' );
 
-        Instruction.setProgramCounter( 0x8000 );
-        this.setState({ instrCounter: 0 });
+        this.simulation = new Simulation(instructionArray);
 
-        let instrObj = Instruction.transpileInstrArr( instrArr );
+        this.setState({
+            pureInstruction: this.simulation.assembler.getPureInstruction()
+        });
 
-        this.props.setConsoleOutput({ 
-            exitCode: instrObj.exitCode,
-            msgArr: instrObj.msgArr });
-
-        this.setState({ instrObj: instrObj });
-
-        if( instrObj.exitCode === 0 )
-            this.props.setConsoleInstruction({ instr: instrObj.jsArr[ 0 ] } );
-        else
-            this.props.setConsoleInstruction({ 
-                instr: undefined } );
+        this.simulation.assemble()
+            .then(val => {
+                this.props.setConsoleOutput({
+                    exitCode: 0,
+                    message: 'Build complete.'
+                });
+            })
+            .catch(error => {
+                this.props.setConsoleOutput({
+                    exitCode: 10,
+                    message: error.message
+                });
+            });
     }
 
     handleRun() {
-
-        let instrArr = this.state.instruction.split( '\n' );
-        Instruction.setProgramCounter( 0x8000 );
-        Instruction.runInstrArr( instrArr );
+        // TODO
     }
 
     handleStep() {
 
-        if( this.state.instrObj != undefined &&
-            this.state.instrCounter < this.state.instrObj.jsArr.length ) {
-            
-            let currInstr = this.state.instrObj.jsArr[ this.state.instrCounter ];
-            Instruction.step( currInstr );
-            
-            setTimeout( () => {
-                let counter = ( this.props.register[ 'pc' ] - 0x8000 ) >>> 2;
-                this.setState({ instrCounter: counter });
-            }, 0 );
+        let exitCode = this.simulation.step();
 
-            let nextInstr = this.state.instrObj
-                .jsArr[ this.state.instrCounter + 1 ];
-
-            if( nextInstr == undefined )
-                this.props.setConsoleInstruction({ 
-                    instr: { iname: 'Program exited.' } });
-            else
-                this.props.setConsoleInstruction({ instr: nextInstr });
+        if (exitCode === 1) {
+            this.props.setConsoleOutput({
+                exitCode: 1,
+                message: 'Please build the program.'
+            });
+        } else if (exitCode === 2) {
+            this.props.setConsoleInstruction({
+                message: 'Program exited.'
+            });
         } else {
-            console.log( 'Program exited: 0' );
+
         }
     }
 
     render() {
         return (
-            <div className="DevContainer">
+            <div className="Editor">
                 <div className="DevActions">
                     <button>Finish</button>
                     <button>Next</button>
                     <button onClick={this.handleStep}>Step</button>
-                    <button onClick={this.handleDebug}>Debug</button>
+                    <button onClick={this.handleBuild}>Build</button>
                     <button onClick={this.handleRun}>Run</button>           
                 </div>
                 <div className="DevEditor">
@@ -152,4 +146,4 @@ const mapStateToProps = state => {
     return { register: state.register };
 }
 
-export default connect( mapStateToProps, mapDispatchToProps )( DevContainer );
+export default connect( mapStateToProps, mapDispatchToProps )( Editor );

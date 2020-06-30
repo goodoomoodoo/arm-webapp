@@ -1,6 +1,9 @@
 import {INSTR_TYPE} from './constants';
 import Register from './Register';
 
+import store from '../redux/store/index';
+import {setRegister} from '../redux/actions';
+
 class Decoder {
 
     /**
@@ -194,6 +197,15 @@ class Decoder {
      */
     writeRegister(name, value) {
         this.register[name] = value;
+
+        store.dispatch(
+            setRegister(
+                {
+                    name: name,
+                    value: value
+                }
+            )
+        );
     }
 }
 
