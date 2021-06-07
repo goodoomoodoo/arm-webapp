@@ -10,7 +10,7 @@ on:
     branches: [ master, feature ]
 
 jobs:
-  build:
+  Install Project Dependencies:
 
     runs-on: ubuntu-latest
 
@@ -25,4 +25,16 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
+    - run: yarn install
+  
+  Jest Test:
+    
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x, 15.x]
+    
+    steps:
+    - name: Sanity Test with Jest
     - run: npm test
