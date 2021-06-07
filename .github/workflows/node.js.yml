@@ -25,7 +25,7 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
-    - run: yarn install
+      run: yarn install
   
   Jest Test:
     
@@ -37,4 +37,4 @@ jobs:
     
     steps:
     - name: Sanity Test with Jest
-    - run: npm test
+      run: npm test
