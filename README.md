@@ -1,6 +1,6 @@
 # ARM webapp
 
-As it is lol
+ARM Online IDE
 
 ## Getting Started
 
