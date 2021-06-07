@@ -10,7 +10,7 @@ on:
     branches: [ master, feature ]
 
 jobs:
-  install:
+  Install Project Dependencies:
 
     runs-on: ubuntu-latest
 
@@ -21,13 +21,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install Project Dependencies on Node.js ${{ matrix.node-version }}
+    - name: Uses on Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
     - run: yarn install
   
-  test:
+  Jest Sanity Test:
     
     runs-on: ubuntu-latest
     
@@ -36,5 +36,5 @@ jobs:
         node-version: [10.x, 12.x, 14.x, 15.x]
     
     steps:
-    - name: Sanity Test with Jest on Nodes.js ${{ matrix.node-version }}
+    - name: Test
       run: npm test
