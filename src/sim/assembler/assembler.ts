@@ -203,7 +203,8 @@ export default class Assembler {
     }
 
     /**
-     * Validate and semi assemble type one instructions
+     * Validate, semi assemble type one instructions, and return instruction
+     * vector
      * @param instruction 
      * @return
      */
@@ -342,13 +343,17 @@ export default class Assembler {
                     }
                 }
             }
+
+            /* Iterate to the next arguement */
+            i++;
             
             /* Post index check, 1 or 0 immedate value expected */
             if (argv[i] === undefined || this.checkIsImmediate(argv[i])) {
                 resolve(argv);
             } else {
                 reject(new Error(
-                    'Invalid syntax: post index can only be immedaite value'
+                    'Invalid syntax: post index can only be immedaite value ' +
+                    `but received ${argv[i]}`
                 ));
             }
         });
@@ -427,7 +432,7 @@ export default class Assembler {
      * @param instruction 
      */
     getInstructionName(instruction: string): string {
-        let instructionName = instruction.trim().split(' ')[0];
+        let instructionName = instruction.trim().split(/[\s\t]+/)[0];
         return instructionName;
     }
 
@@ -437,10 +442,15 @@ export default class Assembler {
      * @return array of arguments
      */
     getInstrArgv(instruction: string): string[] {
-        let args = instruction.substring(instruction.indexOf(' ') + 1);
-        args = args.replace(/\s/g, '');
+        let idx: number = instruction.search(/[ \t\n]/);
+        let args: string = '';
 
-        let argv = args.split(',');
+        if (idx > 0) {
+            args = instruction.substring(idx + 1);
+            args = args.replace(/[ \t\n]+/g, '');
+        }
+
+        let argv: string[] = args.split(',');
 
         return argv;
     }
