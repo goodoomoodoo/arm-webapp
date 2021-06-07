@@ -10,7 +10,7 @@ on:
     branches: [ master ]
 
 jobs:
-  ci-dev-install:
+  ci-module-test:
 
     runs-on: ubuntu-latest
 
@@ -26,18 +26,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install Project Dependencies on Node.js ${{ matrix.node-version }}
-      run: yarn install
-  
-  ci-module-test:
-    
-    runs-on: ubuntu-latest
-    
-    needs: ci-dev-install
-    
-    strategy:
-      matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x]
-    
-    steps:
+      run: npm install
     - name: Module Sanity Test with Jest
       run: npm test
+
