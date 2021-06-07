@@ -19,15 +19,16 @@
   "scripts": {
     "start": "react-static start",
     "stage": "react-static build --staging",
+    "prebuild": "tsc --build tsconfig.json",
     "build": "react-static build",
     "analyze": "react-static build --analyze",
     "serve": "serve dist -p 3000",
     "test": "jest"
   },
   "dependencies": {
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
-    "react-redux": "^7.1.3",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "react-redux": "^7.2.4",
     "react-static": "^7.2.0",
     "react-static-plugin-reach-router": "^7.2.0",
     "react-static-plugin-sitemap": "^7.2.0",
@@ -35,6 +36,7 @@
     "redux": "^4.0.4"
   },
   "devDependencies": {
+    "@types/jest": "^26.0.23",
     "babel-eslint": "^10.0.2",
     "babel-jest": "^26.0.1",
     "eslint": "^6.1.0",
@@ -44,7 +46,9 @@
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.14.3",
-    "jest": "^26.0.1",
-    "serve": "^11.1.0"
+    "jest": "^27.0.4",
+    "serve": "^11.1.0",
+    "ts-jest": "^27.0.3",
+    "typescript": "^4.3.2"
   }
 }
