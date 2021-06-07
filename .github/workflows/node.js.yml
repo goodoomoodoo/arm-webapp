@@ -37,4 +37,4 @@ jobs:
     
     steps:
     - name: Sanity Test with Jest on Nodes.js ${{ matrix.node-version }}
-    - run: npm test
+      run: npm test
