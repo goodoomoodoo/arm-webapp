@@ -8198,7 +8198,7 @@
     "minimist" "^1.2.0"
     "strip-json-comments" "~2.0.1"
 
-"react-dom@^15.0.0 || ^16.0.0 || ^17.0.0 ", "react-dom@^16.14.0", "react-dom@^16.9.0", "react-dom@15.x || 16.x || 16.4.0-alpha.0911da3":
+"react-dom@^15.0.0 || ^16.0.0 || ^17.0.0 ", "react-dom@^16.9.0", "react-dom@15.x || 16.x || 16.4.0-alpha.0911da3":
   "integrity" "sha512-1gCeQXDLoIqMgqD3IO2Ah9bnf0w9kzhwN5q4FGnHZ67hBm9yePzB5JJAIQCc8x3pFnNlwFq4RidZggNAAkzWWw=="
   "resolved" "https://registry.npmjs.org/react-dom/-/react-dom-16.14.0.tgz"
   "version" "16.14.0"
