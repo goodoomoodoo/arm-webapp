@@ -9,5 +9,5 @@
     "sourceMap": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "simjs", "*.test.ts"]
+  "exclude": ["node_modules", "src/simjs", "*.test.ts"]
 }
