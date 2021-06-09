@@ -168,4 +168,46 @@ describe('Assembler Sanity Test', () => {
         await amb.validateTypeTwoInstruction(cmd5)
             .catch(error => expect(error).toBeDefined());
     });
+
+    it('Validate Instruction Type Three', async () => {
+        let cmd1: string = 'push {r1}';
+        let cmd2: string = 'pop {r1, r2}';
+        let cmd3: string = 'push {r1r}';
+        let cmd4: string = 'pop {r1-r5}';
+
+        await amb.validateTypeThreeInstruction(cmd1)
+            .then(argv => expect(argv).toStrictEqual(['r1']));
+
+        await amb.validateTypeThreeInstruction(cmd2)
+            .then(argv => expect(argv).toStrictEqual(['r1', 'r2']));
+
+        await amb.validateTypeThreeInstruction(cmd3)
+            .catch(error => expect(error).toBeDefined());
+
+        await amb.validateTypeThreeInstruction(cmd4)
+            .catch(error => expect(error).toBeDefined());
+    });
+
+    it('Validate Instruction Type Four', async () => {
+        let cmd1: string = 'mov r1, #1';
+        let cmd2: string = 'mvn r1, r2';
+        let cmd3: string = 'cmp r2, sp';
+        let cmd4: string = 'mov r1, r2, r3';
+        let cmd5: string = 'mvn r1, #hi';
+
+        await amb.validateTypeFourInstruction(cmd1)
+            .then(argv => expect(argv).toStrictEqual(['r1', '1']));
+
+        await amb.validateTypeFourInstruction(cmd2)
+            .then(argv => expect(argv).toStrictEqual(['r1', 'r2']));
+
+        await amb.validateTypeFourInstruction(cmd3)
+            .then(argv => expect(argv).toStrictEqual(['r2', 'sp']));
+
+        await amb.validateTypeFourInstruction(cmd4)
+            .catch(error => expect(error).toBeDefined());
+
+        await amb.validateTypeFourInstruction(cmd5)
+            .catch(error => expect(error).toBeDefined());
+    });
 });
