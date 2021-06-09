@@ -1,4 +1,4 @@
-import {INSTRUCTION} from '../arch/arm/instruction';
+import {INSTR_TABLE} from '../arch/arm/instruction';
 import {REGISTER_NAME} from '../arch/arm/register';
 
 export interface LUT {
@@ -24,25 +24,8 @@ export default class Assembler {
      */
      constructor(instruction: string[]) {
         this.instruction = instruction;
-        this.instrTable = this.buildInstrMap();
+        this.instrTable = INSTR_TABLE;
         this.labelTable = {} as any;
-    }
-
-    /**
-     * build function
-     * Build a lookup table of instruction that maps instruction name to
-     * instruction type.
-     */
-    buildInstrMap(): LUT {
-        let instrTable: LUT = {} as any;
-
-        for (let [type, instrNames] of Object.entries(INSTRUCTION)) {
-            for (let instrName of instrNames) {
-                instrTable[instrName] = parseInt(type);
-            }
-        }
-
-        return instrTable;
     }
 
     /**
