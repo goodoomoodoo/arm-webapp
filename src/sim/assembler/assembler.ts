@@ -281,7 +281,7 @@ export default class Assembler {
                     return resolve(argv);
                 } /*Post indexed operation, immediate value expected */
                 else if (this.checkIsImmediate(argv[2])) {
-                    /* Remove sentinol */
+                    /* Remove immediate value sentinel */
                     argv[2] = argv[2].substring(1);
                     return resolve(argv);
                 } else {
@@ -360,7 +360,7 @@ export default class Assembler {
     }
 
     /**
-     * 
+     * Validate type three argument and return the reglist
      * @param instruction 
      * @return
      */
@@ -374,25 +374,28 @@ export default class Assembler {
             let lastChar = lastArg.charAt(lastArg.length - 1);
 
             if (firstChar !== '{') {
-                return reject(new Error('Invalid syntax: register list should'
-                    + 'start with {'));
+                return reject(new Error(
+                    'Invalid syntax: register list should start with {'
+                ));
             }
 
             if (lastChar !== '}') {
-                return reject(new Error('Invalid syntax: register list should'
-                    + 'be closed with }'));
+                return reject(new Error(
+                    'Invalid syntax: register list should be closed with }'
+                ));
             }
 
+            /* Remove brackets around the reglist */
             argv[0] = argv[0].substring(1);
             lastArg = argv[argv.length - 1];
-            argv[argv.length - 1] = lastArg
-                                    .substring(0, lastArg.length - 1);
+            argv[argv.length - 1] = lastArg.substring(0, lastArg.length - 1);
 
             argv.forEach(arg => {
-
                 if (!this.checkIsRegister(arg)) {
-                    return reject(new Error(`Invalid register name: expected `
-                        + `register name but found ${arg}.`));
+                    return reject(new Error(
+                        `Invalid register name: expected register name but ` +
+                        `found ${arg}.`
+                    ));
                 }
             });
 
@@ -401,26 +404,33 @@ export default class Assembler {
     }
 
     /**
-     * 
+     * Validate type four argument and return argument vector
      * @param instruction 
      * @return
      */
     validateTypeFourInstruction(instruction: string): Promise<string[]> {
-
         let argv = this.getInstrArgv(instruction);
 
         return new Promise((resolve, reject) => {
-
             if (!this.checkIsRegister(argv[0])) {
-                return reject(new Error(`Invalid register name: expected `
-                    + `register name but found ${argv[0]}.`));
+                return reject(new Error(
+                    `Invalid register name: expected register name but found ` +
+                    `${argv[0]}.`
+                ));
             }
 
-            if (!this.checkIsRegister(argv[1])
-                && !this.checkIsImmediate(argv[1])) {
-                return reject(new Error(`Invalid syntax: expected a `
-                    + `register or an immediate value but found ${argv[1]}.`));
-            } 
+            if (!this.checkIsRegister(argv[1]) &&
+                !this.checkIsImmediate(argv[1])) {
+                return reject(new Error(
+                    `Invalid syntax: expected a register or an immediate ` + 
+                    `value but found ${argv[1]}.`
+                ));
+            }
+
+            /* Remove immediate value sentinel */
+            if (this.checkIsImmediate(argv[1])) {
+                argv[1] = argv[1].substring(1);
+            }
 
             return resolve(argv);
         });
