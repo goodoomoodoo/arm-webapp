@@ -195,22 +195,22 @@ export default class Assembler {
         let argv: string[] = this.getInstrArgv(instruction);
 
         return new Promise((resolve, reject) => {
-            if (!this.checkIsRegister(argv[0])) {
+            if (!checkIsRegister(argv[0])) {
                 return reject(new Error(
                     `Invalid register name: expected register name but found ` +
                     `${argv[0]}.`
                 ));
             }
             
-            if (!this.checkIsRegister(argv[1])) {
+            if (!checkIsRegister(argv[1])) {
                 return reject(new Error(
                     `Invalid register name: expected register name but found ` +
                     `${argv[1]}.`
                 ));
             }
                 
-            if (!this.checkIsRegister(argv[2]) &&
-                !this.checkIsImmediate(argv[2])
+            if (!checkIsRegister(argv[2]) &&
+                !checkIsImmediate(argv[2])
             ) {
                 return reject(new Error(
                     'Invalid argument: expected register name or immediate ' +
@@ -218,7 +218,7 @@ export default class Assembler {
                 ));
             }
 
-            if (this.checkIsImmediate(argv[2])) argv[2] = argv[2].substring(1);
+            if (checkIsImmediate(argv[2])) argv[2] = argv[2].substring(1);
 
             resolve(argv);
         });
@@ -233,7 +233,7 @@ export default class Assembler {
         let argv: string[] = this.getInstrArgv(instruction);
 
         return new Promise((resolve, reject) => {
-            if (!this.checkIsRegister(argv[0])) {
+            if (!checkIsRegister(argv[0])) {
                 return reject(new Error(
                     `Invalid register name: expected register name but found ` +
                     `${argv[0]}.`
@@ -252,7 +252,7 @@ export default class Assembler {
                 let arg1 = argv[1].substring(1, argv[1].length - 1);
 
                 /** Arg1 is not a register */
-                if (!this.checkIsRegister(arg1)) {
+                if (!checkIsRegister(arg1)) {
                     return reject(new Error(
                         `Invalid register name: expected register name but ` +
                         `found ${arg1}.`
@@ -263,7 +263,7 @@ export default class Assembler {
                 if (argv[2] === undefined) {
                     return resolve(argv);
                 } /*Post indexed operation, immediate value expected */
-                else if (this.checkIsImmediate(argv[2])) {
+                else if (checkIsImmediate(argv[2])) {
                     /* Remove immediate value sentinel */
                     argv[2] = argv[2].substring(1);
                     return resolve(argv);
@@ -293,9 +293,9 @@ export default class Assembler {
                 if (currLastC === ']') {
                     let arg: string = currArg.substring(0, currArg.length - 1);
 
-                    if (this.checkIsImmediate(arg)) {
+                    if (checkIsImmediate(arg)) {
                         argv[i] = currArg.substring(1);
-                    } else if (!this.checkIsRegister(arg)) {
+                    } else if (!checkIsRegister(arg)) {
                         return reject(new Error(
                             `Invalid syntax: immediate value or register ` +
                             `expected but found ${arg}`
@@ -309,9 +309,9 @@ export default class Assembler {
                         let arg: string = 
                             currArg.substring(0, currArg.length - 2);
                         
-                        if (this.checkIsImmediate(arg)) {
+                        if (checkIsImmediate(arg)) {
                             argv[i] = currArg.substring(1);
-                        } else if (!this.checkIsRegister(arg)) {
+                        } else if (!checkIsRegister(arg)) {
                             return reject(new Error(
                                 `Invalid syntax: immediate value or register ` +
                                 `expected but found ${arg}`
@@ -331,7 +331,7 @@ export default class Assembler {
             i++;
             
             /* Post index check, 1 or 0 immedate value expected */
-            if (argv[i] === undefined || this.checkIsImmediate(argv[i])) {
+            if (argv[i] === undefined || checkIsImmediate(argv[i])) {
                 resolve(argv);
             } else {
                 reject(new Error(
@@ -374,7 +374,7 @@ export default class Assembler {
             argv[argv.length - 1] = lastArg.substring(0, lastArg.length - 1);
 
             argv.forEach(arg => {
-                if (!this.checkIsRegister(arg)) {
+                if (!checkIsRegister(arg)) {
                     return reject(new Error(
                         `Invalid register name: expected register name but ` +
                         `found ${arg}.`
@@ -395,15 +395,15 @@ export default class Assembler {
         let argv = this.getInstrArgv(instruction);
 
         return new Promise((resolve, reject) => {
-            if (!this.checkIsRegister(argv[0])) {
+            if (!checkIsRegister(argv[0])) {
                 return reject(new Error(
                     `Invalid register name: expected register name but found ` +
                     `${argv[0]}.`
                 ));
             }
 
-            if (!this.checkIsRegister(argv[1]) &&
-                !this.checkIsImmediate(argv[1])) {
+            if (!checkIsRegister(argv[1]) &&
+                !checkIsImmediate(argv[1])) {
                 return reject(new Error(
                     `Invalid syntax: expected a register or an immediate ` + 
                     `value but found ${argv[1]}.`
@@ -411,7 +411,7 @@ export default class Assembler {
             }
 
             /* Remove immediate value sentinel */
-            if (this.checkIsImmediate(argv[1])) {
+            if (checkIsImmediate(argv[1])) {
                 argv[1] = argv[1].substring(1);
             }
 
@@ -456,34 +456,35 @@ export default class Assembler {
         if (inLabel in this.labelTable) return this.labelTable[inLabel];
         return -1;
     }
+}
 
-    /**
-     * Check if the input string is a register
-     * @param {String} arg 
-     */
-    checkIsRegister(arg: string): boolean {
-        let found = false;
 
-        REGISTER_NAME.forEach(registerName => {
-            if (arg === registerName)
-                found = true;
-        });
+/**
+ * Check if the input string is a register
+ * @param {String} arg 
+ */
+export function checkIsRegister(arg: string): boolean {
+    let found = false;
 
-        return found;
+    REGISTER_NAME.forEach(registerName => {
+        if (arg === registerName)
+            found = true;
+    });
+
+    return found;
+}
+
+/**
+ * Check if the input string is and immediate value
+ * @param {String} arg 
+ */
+export function checkIsImmediate(arg: string): boolean {
+    if (arg.charAt(0) === '#') {
+        let num = arg.substring(1, arg.length);
+
+        /* TODO: Include support for binary and hex */
+        return /^([-+]?[1-9]\d*)$|^0$/.test(num);
     }
 
-    /**
-     * Check if the input string is and immediate value
-     * @param {String} arg 
-     */
-    checkIsImmediate(arg: string): boolean {
-        if (arg.charAt(0) === '#') {
-            let num = arg.substring(1, arg.length);
-
-            /* TODO: Include support for binary and hex */
-            return /^([-+]?[1-9]\d*)$|^0$/.test(num);
-        }
-
-        return false;
-    }
+    return false;
 }

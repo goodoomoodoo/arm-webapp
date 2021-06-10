@@ -1,4 +1,4 @@
-import Assembler, {LUT} from './assembler';
+import Assembler, {LUT, checkIsImmediate, checkIsRegister} from './assembler';
 
 describe('Assembler Sanity Test', () => {
     let amb: Assembler = new Assembler([]);
@@ -35,15 +35,15 @@ describe('Assembler Sanity Test', () => {
     it('Check Immediate Value', () => {
         let arg: string = '#18';
 
-        expect(amb.checkIsImmediate(arg)).toBe(true);
+        expect(checkIsImmediate(arg)).toBe(true);
     });
 
     it('Check Register Name', () => {
         let arg1: string = 'r1';
         let arg2: string = 'abc';
 
-        expect(amb.checkIsRegister(arg1)).toBe(true);
-        expect(amb.checkIsRegister(arg2)).toBe(false);
+        expect(checkIsRegister(arg1)).toBe(true);
+        expect(checkIsRegister(arg2)).toBe(false);
     });
 
     it('Get Instruction Name', () => {
