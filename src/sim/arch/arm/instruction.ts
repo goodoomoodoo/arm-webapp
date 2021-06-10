@@ -12,10 +12,10 @@ export interface InstructionTable {
 
 export const INSTR_TABLE_R: InstructionTableR = {
     0: [ 'b', 'beq', 'bne', 'bl', 'blt', 'ble', 'bgt', 'bge', 'bx' ],
-    1: [ 'add', 'and', 'asr', 'eor', 'lsl', 'lsr', 'mul', 'orr', 'sub'],
+    1: [ 'add', 'and', 'asr', 'eor', 'lsl', 'lsr', 'mul', 'orr', 'sub', 'cmp'],
     2: [ 'ldr', 'ldrb', 'str', 'strb' ],
     3: [ 'push', 'pop' ],
-    4: [ 'mov', 'mvn', 'cmp']
+    4: [ 'mov', 'mvn']
 }
 
 function buildInstrTable(): InstructionTable {
