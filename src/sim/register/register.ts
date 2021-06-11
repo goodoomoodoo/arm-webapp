@@ -1,10 +1,10 @@
 import {REGISTER_NAME} from '../arch/arm/register'
 
-export interface RegisterBlock {
-    [prop: string]: Number
+export interface RegisterFileObj {
+    [prop: string]: number
 }
 
-export class Register {
+export default class RegisterFile {
     /**
      * Register class is a container created based on the register configuration
      * inside 'arch/'. Each register element created is one to one to the
@@ -12,7 +12,7 @@ export class Register {
      */
 
     /* Class variable */
-    block: RegisterBlock;
+    block: RegisterFileObj;
 
     constructor() {
         this.block = {};
