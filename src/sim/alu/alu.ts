@@ -1,11 +1,15 @@
 import RegisterFile from '../register/register';
-import {checkIsImmediate, checkIsRegister} from '../assembler/assembler';
 
 interface LogicFlag {
     zero: number
     overflow: number
     negative: number
     carry: number
+}
+
+export enum Flag {
+    low = 0,
+    high
 }
 
 export default class ALU {
@@ -17,23 +21,23 @@ export default class ALU {
 
     constructor() {
         this.flag = {
-            zero: 0,
-            overflow: 0,
-            negative: 0,
-            carry: 0
+            zero: Flag.low,
+            overflow: Flag.low,
+            negative: Flag.low,
+            carry: Flag.low
         };
     }
 
     executeTypeZero(instr: string[]): number {
         switch (instr[0]) {
             case 'b':
-                return 1;
+                return Flag.high;
             case 'beq':
                 return this.flag.zero;
             case 'bne':
                 return this.flag.zero;
             case 'bl':
-                return 1;
+                return Flag.high;
             case 'blt':
                 return this.flag.negative;
             case 'bgt':
@@ -43,7 +47,7 @@ export default class ALU {
             case 'bge':
                 return this.flag.zero | (this.flag.negative ^ 1);
             case 'bx':
-                return 1;
+                return Flag.high;
         }
 
         return 0;
@@ -53,12 +57,12 @@ export default class ALU {
         let args: number[] = [0, 0];
 
         /* Replace instruction register with number value */
-        args[0] = regFile.block[instr[1]];
+        args[0] = regFile.block[instr[2]];
 
-        if (checkIsImmediate(instr[2])) {
-            args[1] = parseInt(instr[2]);
+        if (!isNaN(Number(instr[3]))) {
+            args[1] = parseInt(instr[3]);
         } else {
-            args[1] = regFile.block[instr[2]];
+            args[1] = regFile.block[instr[3]];
         }
 
         switch (instr[0]) {
@@ -79,10 +83,7 @@ export default class ALU {
             case 'orr':
                 return args[0] | args[1];
             case 'cmp':
-                let res: number = args[0] - args[1];
-
-                this.flag.negative = res < 0 ? 1 : 0;
-                this.flag.zero = res == 0 ? 1 : 0;
+                
         }
 
         return 0;
@@ -90,6 +91,28 @@ export default class ALU {
 
     executeTypeTwo(instr: string[]): number {
         //TODO need to implement pre and post index in assembler
+        return 0;
+    }
+
+    executeTypeFour(instr: string[], regFile: RegisterFile): number {
+        if (instr[0] === 'cmp') {
+            let args: number[] = [0, 0];
+
+            /* Replace instruction register with number value */
+            args[0] = regFile.block[instr[1]];
+
+            if (!isNaN(Number(instr[2]))) {
+                args[1] = parseInt(instr[2]);
+            } else {
+                args[1] = regFile.block[instr[2]];
+            }
+
+            let res: number = args[0] - args[1];
+
+            this.flag.negative = res < 0 ? Flag.high : Flag.low;
+            this.flag.zero = res == 0 ? Flag.high : Flag.low;
+        }
+        
         return 0;
     }
 }
