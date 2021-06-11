@@ -29,7 +29,7 @@ describe('Instruction Static Test', () => {
             'pop': 3,
             'mov': 4,
             'mvn': 4,
-            'cmp': 1
+            'cmp': 4
         }
 
         for (let key of Object.keys(expectedTable)) {
