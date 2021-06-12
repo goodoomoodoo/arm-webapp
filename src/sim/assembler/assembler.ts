@@ -88,11 +88,11 @@ export default class Assembler {
     assemble = async () => {
         this.labelTable = this.filterLabel(this.instruction);
         let trimmedInstruction: string[] = this.trimInstruction(this.instruction);
-        let assembledInstruction: Array<string[]> = [];
+        let assembledInstruction: string[][]= [];
 
         for (let i = 0; i < trimmedInstruction.length; i++) {
             let currInstr = trimmedInstruction[i];
-            let argv: string[] = await this.validateInstruction(currInstr);
+            let argv: string[][] = await this.validateInstruction(currInstr);
 
             assembledInstruction = assembledInstruction.concat(argv);
         }
@@ -102,44 +102,36 @@ export default class Assembler {
 
     /**
      * Validate the instructions based on the type of the instruction
-     * @param instruction
+     * @param instr
      */
-    validateInstruction = async (instruction: string): Promise<string[]> => {
+    validateInstruction = async (instr: string): Promise<string[][]> => {
         let instrName: string = 
-            await this.validateInstructionName(instruction);
-        let instrArgv: string[];
+            await this.validateInstructionName(instr);
+        let argv: string[][];
         
         switch (this.instrTable[instrName]) {
             case 0:
-                instrArgv = await
-                    this.validateTypeZeroInstruction(instruction);
+                argv = await this.validateTypeZeroInstruction(instr);
                 break;
             case 1:
-                instrArgv = await
-                    this.validateTypeOneInstruction(instruction);
+                argv = await this.validateTypeOneInstruction(instr);
                 break;
             case 2:
-                instrArgv = await
-                    this.validateTypeTwoInstruction(instruction);
+                argv = await this.validateTypeTwoInstruction(instr);
                 break;
             case 3:
-                instrArgv = await
-                    this.validateTypeThreeInstruction(instruction);
+                argv = await this.validateTypeThreeInstruction(instr);
                 break;
             case 4:
-                instrArgv = await
-                    this.validateTypeFourInstruction(instruction);
+                argv = await this.validateTypeFourInstruction(instr);
                 break;
             default:
                 return Promise.reject(new Error(
-                    "Syntax Error: no argument found."
+                    `Syntax Error: '${instrName}' argument not found.`
                 ));
-                break;
         }
 
-        instrArgv.splice(0, 0, instrName);
-
-        return instrArgv;
+        return argv;
     }
 
     /**
@@ -149,7 +141,7 @@ export default class Assembler {
      * @return
      */
     validateInstructionName(instruction: string): Promise<string> {
-        let instructionName = this.getInstructionName(instruction);
+        let instructionName = this.getInstrName(instruction);
 
         return new Promise((resolve, reject) => {
             if (this.instrTable[instructionName] === undefined)
@@ -161,25 +153,27 @@ export default class Assembler {
 
     /**
      * Validate the Type 0 instruction and return label's pc pointer
-     * @param instruction 
+     * 
+     * Note: Instruction name should be valid in this scope 
+     * @param instr 
      * @return
      */
-    validateTypeZeroInstruction(instruction: string): Promise<string[]> {
-        let argv: string[] = this.getInstrArgv(instruction);
-        let args = argv[0];
-        let instructionName: string = this.getInstructionName(instruction);
+    validateTypeZeroInstruction(instr: string): Promise<string[][]> {
+        let argv: string[] = this.getInstrArgv(instr);
+        let labelName = argv[0];
+        let instrName: string = this.getInstrName(instr);
 
         return new Promise((resolve, reject) => {
-            if (instructionName === 'bx') {
+            if (instrName === 'bx') {
                 // bx not yet implemented
                 reject(new Error('BX is not yet supported.'));
             } else {
-                let pc: number = this.lookup(args)
+                let pc: number = this.lookup(labelName)
 
                 if (pc < 0) {
-                    reject(new Error(`Invalid label: ${args} not found`));
+                    reject(new Error(`Invalid label: ${labelName} not found`));
                 } else {
-                    resolve([pc.toString()]);
+                    resolve([[instrName, pc.toString()]]);
                 }
             }
         });
@@ -188,11 +182,12 @@ export default class Assembler {
     /**
      * Validate, semi assemble type one instructions, and return instruction
      * vector
-     * @param instruction 
+     * @param instr 
      * @return
      */
-    validateTypeOneInstruction(instruction: string): Promise<string[]> {
-        let argv: string[] = this.getInstrArgv(instruction);
+    validateTypeOneInstruction(instr: string): Promise<string[][]> {
+        let argv: string[] = this.getInstrArgv(instr);
+        let instrName: string = this.getInstrName(instr);
 
         return new Promise((resolve, reject) => {
             if (!checkIsRegister(argv[0])) {
@@ -220,17 +215,20 @@ export default class Assembler {
 
             if (checkIsImmediate(argv[2])) argv[2] = argv[2].substring(1);
 
-            resolve(argv);
+            resolve([[instrName, ...argv]]);
         });
     }
 
     /**
-     * Validate type two instruction and semi assemble the instruction
-     * @param instruction 
+     * Validate type two instruction and assemble the instruction.
+     * 
+     * e.g Pre index instruction gets break down into two instructions.
+     * @param instr 
      * @return
      */
-    validateTypeTwoInstruction(instruction: string): Promise<string[]> {
-        let argv: string[] = this.getInstrArgv(instruction);
+    validateTypeTwoInstruction(instr: string): Promise<string[][]> {
+        let argv: string[] = this.getInstrArgv(instr);
+        let instrName: string = this.getInstrName(instr);
 
         return new Promise((resolve, reject) => {
             if (!checkIsRegister(argv[0])) {
@@ -240,103 +238,123 @@ export default class Assembler {
                 ));
             }
 
+            if (argv[1] == undefined) {
+                return reject(new Error(
+                    'Invalid syntax: expect indexing with regsiter.'
+                ));
+            }
+
             /** Syntax Error: expect [ */
             if (argv[1].charAt(0) !== '[') {
                 return reject(new Error(
                     'Invalid syntax: expected [ in the argument.'
                 ));
+            } else {
+                /* Remove opening bracket */
+                argv[1] = argv[1].substring(1);
             }
 
-            /** Bracket is closed in the first argument */
-            if (argv[1].charAt(argv[1].length - 1) === ']') {
-                let arg1 = argv[1].substring(1, argv[1].length - 1);
+            let closed: boolean = false;
+            let pre: boolean = false;
+            let post: boolean = false;
+            let currArgLastC: string = argv[1].charAt(argv[1].length - 1);
 
-                /** Arg1 is not a register */
-                if (!checkIsRegister(arg1)) {
-                    return reject(new Error(
-                        `Invalid register name: expected register name but ` +
-                        `found ${arg1}.`
-                    ));
-                }
-                
-                /* Regular register */
-                if (argv[2] === undefined) {
-                    return resolve(argv);
-                } /*Post indexed operation, immediate value expected */
-                else if (checkIsImmediate(argv[2])) {
-                    /* Remove immediate value sentinel */
-                    argv[2] = argv[2].substring(1);
-                    return resolve(argv);
-                } else {
-                    return reject(new Error(
-                        'Invalid syntax: expected offset to be immediate value.'
-                    ));
-                }
-            }
-
-            /* Bracket is not closed properly */
-            if (argv[2] === undefined) {
+            /* Check first arg */
+            if (currArgLastC === ']') {
+                closed = true;
+                argv[1] = argv[1].substring(0, argv[1].length - 1);
+            } else if (currArgLastC === '!') {
                 return reject(new Error(
-                    'Invalid syntax: no offset found, expected ] in the ' +
-                    'argument.'
+                    'Invalid syntax: expect bracket to be closed before ' +
+                    'preindex symbol'
+                ));
+            }
+
+            if (!checkIsRegister(argv[1])) {
+                return reject(new Error(
+                    `Invalid syntax: expect a register but found ${argv[1]}`
                 ));
             }
             
-            /* Variable i keeps track of the iteration*/
-            let i: number = 2;
+            /* Check second arg */
+            if (argv[2] === undefined) {
+                if (!closed) {
+                    return reject(new Error(
+                        'Invalid syntax: indexing bracket not closed'
+                    ));
+                } else {
+                    return resolve([[instrName, ...argv]]);
+                }
+            } else if (pre) {
+                return reject(new Error(
+                    'Invalid syntax: no argument allowed after preindex'
+                ));
+            }
 
-            /* Preindex check */
-            for (; i < argv.length; i++) {
-                let currArg: string = argv[i];
-                let currLastC: string = currArg.charAt(currArg.length - 1);
+            if (closed) {
+                if (!checkIsImmediate(argv[2])) {
+                    return reject(new Error(
+                        'Invalid syntax: expect indexing argument to be ' +
+                        'immediate value'
+                    ));
+                } else {
+                    post = true;
+                }
+            } else {
+                currArgLastC = argv[2].charAt(argv[2].length - 1);
 
-                if (currLastC === ']') {
-                    let arg: string = currArg.substring(0, currArg.length - 1);
+                if (currArgLastC === '!') {
+                    pre = true;
+                    argv[2] = argv[2].substring(0, argv[2].length - 1);
+                    currArgLastC = argv[2].charAt(argv[2].length - 1);
 
-                    if (checkIsImmediate(arg)) {
-                        argv[i] = currArg.substring(1);
-                    } else if (!checkIsRegister(arg)) {
-                        return reject(new Error(
-                            `Invalid syntax: immediate value or register ` +
-                            `expected but found ${arg}`
-                        ));
-                    }
-
-                    break;
-                } /* Preindexed operation */
-                else if (currLastC === '!') {
-                    if (currArg.charAt(argv[2].length - 2) === ']') {
-                        let arg: string = 
-                            currArg.substring(0, currArg.length - 2);
-                        
-                        if (checkIsImmediate(arg)) {
-                            argv[i] = currArg.substring(1);
-                        } else if (!checkIsRegister(arg)) {
-                            return reject(new Error(
-                                `Invalid syntax: immediate value or register ` +
-                                `expected but found ${arg}`
-                            ));
-                        }
-
-                        break;
+                    if (currArgLastC === ']') {
+                        closed = true;
+                        argv[2] = argv[2].substring(0, argv[2].length - 1);
                     } else {
                         return reject(new Error(
-                            "Invalid syntax: '!' should not appear before ']'"
+                            'Invalid syntax: missing closing bracket.'
                         ));
                     }
+                } else if (currArgLastC === ']') {
+                    closed = true;
+                    argv[2] = argv[2].substring(0, argv[2].length - 1);
                 }
             }
 
-            /* Iterate to the next arguement */
-            i++;
-            
-            /* Post index check, 1 or 0 immedate value expected */
-            if (argv[i] === undefined || checkIsImmediate(argv[i])) {
-                resolve(argv);
+            if (!checkIsImmediate(argv[2])) {
+                return reject(new Error(
+                    'Invalid syntax: expect indexing argument to be immediate' +
+                    ' value'
+                ));
             } else {
-                reject(new Error(
-                    'Invalid syntax: post index can only be immedaite value ' +
-                    `but received ${argv[i]}`
+                argv[2] = argv[2].substring(1);
+            }
+
+            /* Check third argument */
+            if (argv[3] === undefined) {
+                if (closed) {
+                    if (pre) {
+                        return resolve([
+                            ['add', argv[1], argv[1], argv[2]],
+                            [instrName, argv[0], argv[1]]
+                        ]);
+                    } else if (post) {
+                        return resolve([
+                            [instrName, argv[0], argv[1]],
+                            ['add', argv[1], argv[1], argv[2]]
+                        ]);
+                    } else {
+                        return resolve([[instrName, ...argv]]);
+                    }
+                } else {
+                    return reject(new Error(
+                        'Invalid syntax: missing closing bracket'
+                    ));
+                }
+            } else {
+                return reject(new Error(
+                    'Double word not supported.'
                 ));
             }
         });
@@ -344,55 +362,69 @@ export default class Assembler {
 
     /**
      * Validate type three argument and return the reglist
-     * @param instruction 
+     * @param instr 
      * @return
      */
-    validateTypeThreeInstruction(instruction: string): Promise<string[]> {
+    validateTypeThreeInstruction(instr: string): Promise<string[][]> {
         /** Register list range not supported */
-        let argv = this.getInstrArgv(instruction);
+        let argv: string[] = this.getInstrArgv(instr);
+        let instrName: string = this.getInstrName(instr);
+        let ambInstr: string[][] = [];
 
         return new Promise((resolve, reject) => {
-            let firstChar = argv[0].charAt(0);
-            let lastArg = argv[argv.length - 1];
-            let lastChar = lastArg.charAt(lastArg.length - 1);
+            let lastArg: string = argv[argv.length - 1];
+            let lastArgC: string = lastArg.charAt(lastArg.length - 1);
 
-            if (firstChar !== '{') {
+            if (argv[0].charAt(0) !== '{') {
                 return reject(new Error(
-                    'Invalid syntax: register list should start with {'
+                    'Invalid syntax: missing opening bracket for reglist'
                 ));
+            } else {
+                /* Remove opening bracket */
+                argv[0] = argv[0].substring(1);
             }
 
-            if (lastChar !== '}') {
+            if (lastArgC !== '}') {
                 return reject(new Error(
-                    'Invalid syntax: register list should be closed with }'
+                    'Invalid syntax: missing closing bracket for reglist'
                 ));
+            } else {
+                /* Remove closing bracket */
+                lastArg = argv[argv.length - 1];
+                argv[argv.length - 1] = 
+                    lastArg.substring(0, lastArg.length - 1);
             }
 
-            /* Remove brackets around the reglist */
-            argv[0] = argv[0].substring(1);
-            lastArg = argv[argv.length - 1];
-            argv[argv.length - 1] = lastArg.substring(0, lastArg.length - 1);
-
-            argv.forEach(arg => {
-                if (!checkIsRegister(arg)) {
+            for (let i = 0; i < argv.length; i++) {
+                if (!checkIsRegister(argv[i])) {
                     return reject(new Error(
-                        `Invalid register name: expected register name but ` +
-                        `found ${arg}.`
+                        `Invalid syntax: expect a register but found ${argv[i]}`
                     ));
+                } else if (instrName === 'push') {
+                    ambInstr = ambInstr.concat([
+                        ['str', argv[i], 'sp'],
+                        ['add', 'sp', 'sp', '4'] 
+                    ]);
+                } else if (instrName === 'pop') {
+                    ambInstr = ambInstr.concat([
+                        ['ldr', argv[i], 'sp'],
+                        ['sub', 'sp', 'sp', '4']
+                    ]);
                 }
-            });
+            }
 
-            return resolve(argv);
+            return resolve(ambInstr);
         })
     }
 
     /**
      * Validate type four argument and return argument vector
-     * @param instruction 
+     * @param instr 
      * @return
      */
-    validateTypeFourInstruction(instruction: string): Promise<string[]> {
-        let argv = this.getInstrArgv(instruction);
+    validateTypeFourInstruction(instr: string): Promise<string[][]> {
+        let argv: string[] = this.getInstrArgv(instr);
+        let instrName: string = this.getInstrName(instr)
 
         return new Promise((resolve, reject) => {
             if (!checkIsRegister(argv[0])) {
@@ -415,7 +447,7 @@ export default class Assembler {
                 argv[1] = argv[1].substring(1);
             }
 
-            return resolve(argv);
+            return resolve([[instrName, ...argv]]);
         });
     }
 
@@ -424,7 +456,7 @@ export default class Assembler {
      * and tabs
      * @param instruction 
      */
-    getInstructionName(instruction: string): string {
+    getInstrName(instruction: string): string {
         let instructionName = instruction.trim().split(/[\s\t]+/)[0];
         return instructionName;
     }
