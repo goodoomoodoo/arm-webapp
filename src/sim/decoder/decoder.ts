@@ -21,12 +21,14 @@ export default class Decoder {
 
     instrTable: InstructionTable;
     control: SignalBlock;
-    instr: string[][];
-    currInstr: string[];
+    instr: string[][][];
+    currInstr: string[][];
     regFile: RegisterFile;
+    counter: number;
 
-    constructor(assembledInstr: string[][], regFile: RegisterFile) {
+    constructor(assembledInstr: string[][][], regFile: RegisterFile) {
         this.instrTable = INSTR_TABLE;
+        this.counter = 0;
         this.control = {
             writeBack: true,
             memRead: false,
@@ -41,8 +43,12 @@ export default class Decoder {
         this.updateControl();
     }
 
+    get currInstrV(): string[] {
+        return this.currInstr[this.counter];
+    }
+
     get currInstrName(): string {
-        return this.currInstr ? this.currInstr[0] : '';
+        return this.currInstr ? this.currInstr[this.counter][0] : '';
     }
 
     get currInstrType(): number {
@@ -77,7 +83,7 @@ export default class Decoder {
             }
 
             /* Check the argument for pre-index and post-index */
-            let last: string = this.currInstr[this.currInstr.length - 1];
+            let last: string = this.currInstr[this.counter][this.currInstr.length - 1];
             if (last.charAt(last.length - 1) === '!' &&
                 this.currInstr.length >= 4) {
                 this.control.preIndex = true;
@@ -98,10 +104,24 @@ export default class Decoder {
         return this.instr[this.regFile.block.pc + 1] !== undefined;
     }
 
+    subInstrDone(): boolean {
+        return this.counter == this.currInstr.length;
+    }
+
+    nextSubInstr() {
+        this.counter++;
+
+        if (!this.subInstrDone()) {
+            this.resetControl();
+            this.updateControl();
+        }
+    }
+
     next() {
-        if (this.hasNext()) {
+        if (this.subInstrDone()) {
             this.regFile.block.pc++;
             this.currInstr = this.instr[this.regFile.block.pc];
+            this.counter = 0;
             this.resetControl();
             this.updateControl();
         }
