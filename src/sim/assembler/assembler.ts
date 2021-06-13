@@ -11,6 +11,9 @@ export default class Assembler {
      * strings into distinguishable elements - instruction name, register, and
      * label.
      * 
+     * Note: Assembler will break each instruction into double string array. If
+     *       the instruction can be broken down into subinstruction, then the
+     *       double string array will contain multiple instruction vector.
      */
 
     /* Class variable */
@@ -30,36 +33,22 @@ export default class Assembler {
 
     /**
      * Filter out the labels in the instruction and create label lookup table.
-     * @param instruction Lines of assembly instructions
+     * @param ambInstr Lines of assembly instructions
      * @returns Lookup Table of Labels to Line number
      */
-    filterLabel(instruction: string[]): LUT {
+    filterLabel(ambInstr: string[][][]): LUT {
         let labelTable: LUT = {} as any;
 
-        for (let i = 0; i < instruction.length;) {
+        for (let i = 0; i < ambInstr.length;) {
 
-            let currentInstruction = instruction[i];
+            /* First instruction name of the vector pointer should be label */
+            let currInstr = ambInstr[i][0][0];
 
-            let index = currentInstruction.search(':');
+            if (currInstr.charAt(currInstr.length - 1) === ':') {
+                let labelName = currInstr.substring(0, currInstr.length - 1);
 
-            if (index !== -1) {
-                let labelName = currentInstruction.substring(0, index);
-                let newInstruction = currentInstruction.substring(index + 1);
-                
-                /* Check if the line might contains instruction */
-                if (/\S/.test(newInstruction)) {
-
-                    instruction[i] = newInstruction.trim();
-                    labelTable[labelName] = i++;
-
-                }
-                /* This line do not contain instruction */
-                else {
-
-                    /** Remove the label line */
-                    instruction.splice(i, 1);
-                    labelTable[labelName] = i;
-                }
+                ambInstr.splice(i, 1);
+                labelTable[labelName] = i;
             } else {
                 i++;
             }
@@ -82,22 +71,37 @@ export default class Assembler {
     }
 
     /**
-     * Validate the instructions and return array of distinct instruction
-     * @return {String[][]}
+     * Validate the instructions, assemble instruction, break down instructions,
+     * and return instruction double array.
+     * @return 
      */
-    assemble = async () => {
-        this.labelTable = this.filterLabel(this.instruction);
-        let trimmedInstruction: string[] = this.trimInstruction(this.instruction);
-        let assembledInstruction: string[][]= [];
+    assemble = async (): Promise<string[][][]> => {
+        let trimmedInstr: string[] = this.trimInstruction(this.instruction);
+        let asmInstr: string[][][] = [];
 
-        for (let i = 0; i < trimmedInstruction.length; i++) {
-            let currInstr = trimmedInstruction[i];
-            let argv: string[][] = await this.validateInstruction(currInstr);
+        for (let i = 0; i < trimmedInstr.length; i++) {
+            let currInstr: string = trimmedInstr[i];
 
-            assembledInstruction = assembledInstruction.concat(argv);
+            /* Skip label or seperate label */
+            if (currInstr.includes(':')) {
+                let sep: string[] = currInstr.split(':');
+                asmInstr = asmInstr.concat([[sep[1] + ':']]);
+                
+                if (sep[1] !== '') {
+                    let argv: string[][] = 
+                        await this.validateInstruction(sep[1]);
+                    asmInstr.push(argv);
+                }
+            } else {
+                let argv: string[][] = 
+                    await this.validateInstruction(currInstr);
+                asmInstr.push(argv);
+            }
         }
 
-        return assembledInstruction;
+        this.labelTable = this.filterLabel(asmInstr);
+
+        return asmInstr;
     }
 
     /**

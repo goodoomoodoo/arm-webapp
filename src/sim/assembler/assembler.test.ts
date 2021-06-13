@@ -4,22 +4,11 @@ describe('Assembler Sanity Test', () => {
     let amb: Assembler = new Assembler([]);
 
     it('Filter Label with No Instruction', () => {
-        let cmd: string[] = ['start:'];
+        let cmd: string[][][] = [[['start:']]];
         let labelTable: LUT = amb.filterLabel(cmd);
 
         /* Label table shouldn't care and default to 0 */
         expect(labelTable['start']).toBe(0);
-    });
-
-    it('Filter Label with Instruction', () => {
-        let cmd1: string[] = ['start: mov r1, r2'];
-        let cmd2: string[] = ['start:', 'mov r1, r2'];
-        let lt1: LUT = amb.filterLabel(cmd1);
-        let lt2: LUT = amb.filterLabel(cmd2);
-
-        /* Labels should point to pc 0 */
-        expect(lt1['start']).toBe(0);
-        expect(lt2['start']).toBe(0);
     });
 
     it('Trim Instruction', () => {
@@ -202,3 +191,19 @@ describe('Assembler Sanity Test', () => {
             .catch(error => expect(error).toBeDefined());
     });
 });
+
+describe('Assembler Functionality Test', () => {
+    it('Assembly Test', async () => {
+        let instr: string[] = [
+            'mov r1, #10',
+            'add r3, r1, r2',
+            'str r1, [r3, #10]!',
+            'cmp r1, r3'
+        ];
+        let assembler: Assembler = new Assembler(instr);
+
+        let asmInstr: string[][][] = await assembler.assemble();
+
+        console.log(asmInstr);
+    });
+})
