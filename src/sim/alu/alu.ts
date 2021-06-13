@@ -28,6 +28,11 @@ export default class ALU {
         };
     }
 
+    /**
+     * Return jump boolean with repect to the branch type.
+     * @param instr 
+     * @returns 
+     */
     executeTypeZero(instr: string[]): number {
         switch (instr[0]) {
             case 'b':
@@ -53,6 +58,12 @@ export default class ALU {
         return 0;
     }
 
+    /**
+     * Execute arithmetic operations.
+     * @param instr 
+     * @param regFile 
+     * @returns 
+     */
     executeTypeOne(instr: string[], regFile: RegisterFile): number {
         let args: number[] = [0, 0];
 
@@ -89,11 +100,25 @@ export default class ALU {
         return 0;
     }
 
-    executeTypeTwo(instr: string[]): number {
-        //TODO need to implement pre and post index in assembler
-        return 0;
+    /**
+     * Type two instruction including ldr and str expect at least two 
+     * arguments, both register.
+     * @param instr 
+     */
+    executeTypeTwo(instr: string[], regFile: RegisterFile): number {
+        if (instr[3]) {
+            return regFile.block[instr[2]] + parseInt(instr[3]);
+        } else {
+            return regFile.block[instr[2]];
+        }
     }
 
+    /**
+     * Bypass instruction unless is cmp, then change internal flag.
+     * @param instr 
+     * @param regFile 
+     * @returns 
+     */
     executeTypeFour(instr: string[], regFile: RegisterFile): number {
         if (instr[0] === 'cmp') {
             let args: number[] = [0, 0];

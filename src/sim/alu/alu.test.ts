@@ -46,6 +46,17 @@ describe('ALU Sanity Test', () => {
         expect(alu.executeTypeOne(cmd3, regFile)).toBe(3);
     });
 
+    it('Type Two Validation', () => {
+        let regFile: RegisterFile = new RegisterFile()
+        let cmd1: string[] = ['ldr', 'r1', 'r1'];
+        let cmd2: string[] = ['str', 'r1', 'r2', '100'];
+        let cmd3: string[] = ['ldr', 'r1', 'r2', '5'];
+
+        expect(alu.executeTypeTwo(cmd1, regFile)).toBe(0);
+        expect(alu.executeTypeTwo(cmd2, regFile)).toBe(100);
+        expect(alu.executeTypeTwo(cmd3, regFile)).toBe(5);
+    });
+
     it('Type Four Validation', () => {
         let regFile: RegisterFile = new RegisterFile();
         let cmd1: string[] = ['cmp', 'r1', '3'];
