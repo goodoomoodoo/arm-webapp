@@ -19,23 +19,23 @@
   "scripts": {
     "start": "react-static start",
     "stage": "react-static build --staging",
-    "prebuild": "tsc --build tsconfig.json",
+    "prebuild": "webpack",
     "build": "react-static build",
     "analyze": "react-static build --analyze",
     "serve": "serve dist -p 3000",
     "test": "jest --verbose"
   },
-  "dependencies": {
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-redux": "^7.2.4",
-    "react-static": "^7.5.3"
-  },
   "devDependencies": {
     "@types/jest": "^26.0.23",
+    "css-loader": "^2.1.1",
     "eslint": "^7.28.0",
+    "html-webpack-plugin": "^5.3.1",
     "jest": "^27.0.4",
+    "mini-css-extract-plugin": "^1.6.0",
     "ts-jest": "^27.0.3",
-    "typescript": "^4.3.2"
+    "ts-loader": "^9.2.3",
+    "typescript": "^4.3.2",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2"
   }
 }
