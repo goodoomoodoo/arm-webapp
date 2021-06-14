@@ -1,33 +1,29 @@
-/*******************************************************************************
- * Buttons 
- ******************************************************************************/
-const stepButton = document.getElementById('step-btn');
-const buildButton = document.getElementById('build-btn');
-const runButton = document.getElementById('run-btn');
+import Simulation from '../../sim/simulation';
 
-/*******************************************************************************
- * Editor Logic
- ******************************************************************************/
 export default class Editor {
   /**
    * Editor container
    */
   lineCount: number;
+  sim: Simulation;
 
   constructor() {
     this.lineCount = 1;
+    this.sim = null as any;
     
-    this.setUp = this.setUp.bind(this);
-    this.setUpCode = this.setUpCode.bind(this);
+    this.setup = this.setup.bind(this);
+    this.setupCode = this.setupCode.bind(this);
+    this.setupCmd = this.setupCmd.bind(this);
 
-    this.setUp();
+    this.setup();
   }
 
-  setUp() {
-    this.setUpCode();
+  setup() {
+    this.setupCode();
+    this.setupCmd();
   }
 
-  setUpCode() {
+  setupCode() {
     let textArea = document.getElementById('code');
 
     if (textArea !== undefined && textArea !== null) {
@@ -59,5 +55,18 @@ export default class Editor {
         this.lineCount = lineCount;
       });
     }
+  }
+
+  setupCmd() {
+    let stepButton = document.getElementById('step-btn');
+    let buildButton = document.getElementById('build-btn');
+    let runButton = document.getElementById('run-btn');
+
+    buildButton?.addEventListener('click', () => {
+      let codeTA = document.getElementById('code');
+      let instr: string[] = codeTA?.nodeValue?.split('\n') || [];
+      this.sim = new Simulation(instr);
+      this.sim.assemble();
+    });
   }
 }
