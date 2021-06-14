@@ -17,12 +17,8 @@
   "license": "ISC",
   "private": true,
   "scripts": {
-    "start": "react-static start",
-    "stage": "react-static build --staging",
-    "prebuild": "webpack",
-    "build": "react-static build",
-    "analyze": "react-static build --analyze",
-    "serve": "serve dist -p 3000",
+    "start": "cd ./dist; python3 -m http.server",
+    "build": "webpack",
     "test": "jest --verbose"
   },
   "devDependencies": {
