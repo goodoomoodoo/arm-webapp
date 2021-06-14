@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
-    "lib": ["es2015"],
+    "target": "es6",
+    "module": "es6",
+    "lib": ["es2015", "dom"],
     "strict": true,
     "declaration": true,
-    "outDir": "src/simjs",
-    "sourceMap": true
+    "outDir": "./dist",
+    "sourceMap": true,
+    "allowJs": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/var/**/*"],
   "exclude": ["node_modules", "src/simjs", "**/*.test.ts"]
 }
