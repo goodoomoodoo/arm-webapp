@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <div class="Interface">
+            <div class="Editor">
+                <div class="DevActions">
+                    <button>Finish</button>
+                    <button>Next</button>
+                    <button id='step-btn'>Step</button>
+                    <button id='build-btn'>Build</button>
+                    <button id='run-btn'>Run</button>           
+                </div>
+                <div class="DevEditor">
+                    <div id="line-nu-div" class="DevLineNumber">
+                        <span>1</span>
+                    </div>
+                    <textarea id="code"></textarea>
+                </div>
+            </div>
+            <!-- Debug Monitor -->
+            <div class="Monitor">
+                <!-- Navigation Bar -->
+                <div class='Navbar'>
+                    <button 
+                        id='select-register-btn'
+                        class='Register selected'>Register</button>
+    
+                    <button 
+                        id='select-memory-btn'
+                        class='Memory unselected'>Memory</button>
+                </div>
+                <!-- Register/Memory Window -->
+                <div class="Window">
+                    <div id="monitor-register" class="Register"></div>
+                </div>
+                <!-- <Window state={this.state.selectedState} />
+                <Console /> -->
+            </div>
+        </div>
+    </body>
+</html>
