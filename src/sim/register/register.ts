@@ -21,4 +21,9 @@ export default class RegisterFile {
             this.block[rname] = 0
         }
     }
+
+    write(regName: string, value: number, callback: Function) {
+        this.block[regName] = value;
+        callback();
+    }
 }
