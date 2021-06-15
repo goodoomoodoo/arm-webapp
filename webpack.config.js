@@ -1,4 +1,5 @@
 const path = require('path');
+const TerserPlugin = require('terser-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
@@ -9,6 +10,10 @@ module.exports = [
     entry: './src/var/index.ts',
     mode: MODE,
     devtool: 'inline-source-map',
+    optimization: {
+      minimize: true,
+      minimizer: [new TerserPlugin()],
+    },
     module: {
       rules: [
         {
