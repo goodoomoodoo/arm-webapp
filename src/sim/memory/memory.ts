@@ -21,7 +21,7 @@ export default class Memory {
      * @param addr 
      * @param value 
      */
-    write(addr: number, value: number) {
+    write(addr: number, value: number, callback: Function) {
         let index = addr % WORD_SIZE;
 
         /* Check if the addr spans different block */
@@ -53,6 +53,8 @@ export default class Memory {
         } else {
             this.block[addr] = value;
         }
+
+        callback(this.block);
     }
 
     /**
@@ -60,7 +62,7 @@ export default class Memory {
      * @param addr 
      * @param value 
      */
-    writeByte(addr: number, value: number) {
+    writeByte(addr: number, value: number, callback: Function) {
         let mask: number = 0x000000FF;
         let index: number = addr % WORD_SIZE;
 
@@ -74,6 +76,8 @@ export default class Memory {
 
         this.block[addr - index] &= mask;
         this.block[addr - index] |= value;
+
+        callback(this.block);
     }
 
     read(addr: number): number {
