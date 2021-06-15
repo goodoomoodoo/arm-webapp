@@ -2,7 +2,7 @@ import ALU from './alu/alu';
 import Assembler from './assembler/assembler';
 import Decoder from './decoder/decoder';
 import Memory from './memory/memory';
-import RegisterFile from './register/register';
+import RegisterFile, {CallBackType} from './register/register';
 
 export default class Simulation {
     /**
@@ -16,19 +16,26 @@ export default class Simulation {
     memFile: Memory;
     regFile: RegisterFile;
     assembled: boolean;
+    memCallBack: Function;
+    regCallBack: CallBackType;
 
-
-    constructor(instruction: string[]) {
-        this.assembler = new Assembler(instruction);
+    constructor() {
+        this.assembler = null as any;
         this.decoder = null as any;
         this.alu = new ALU();
         this.memFile = new Memory();
         this.regFile = new RegisterFile();
         this.assembled = false;
+        this.memCallBack = null as any;
+        this.regCallBack = null as any;
+
+        this.assemble = this.assemble.bind(this);
+        this.step = this.step.bind(this);
     }
 
-    assemble = async () => {
+    assemble = async (instr: string[]) => {
         /* Assembled instruction */
+        this.assembler = new Assembler(instr);
         let ambInstr: string[][][] = await this.assembler.assemble();
         this.decoder = new Decoder(ambInstr, this.regFile);
         this.assembled = true;
@@ -50,15 +57,15 @@ export default class Simulation {
                     break;
                 case 1:
                     aluOut = this.alu.executeTypeOne(this.decoder.currInstrV,
-                                                    this.regFile);
+                                                     this.regFile);
                     break;
                 case 2:
                     aluOut = this.alu.executeTypeTwo(this.decoder.currInstrV,
-                                                    this.regFile);
+                                                     this.regFile);
                     break;
                 case 4:
                     aluOut = this.alu.executeTypeFour(this.decoder.currInstrV,
-                                                    this.regFile);
+                                                      this.regFile);
             }
 
             /* Memory */
@@ -68,12 +75,14 @@ export default class Simulation {
                 if (this.decoder.currInstrName === 'str') {
                     this.memFile.write(
                         aluOut, 
-                        this.regFile.block[this.decoder.currInstrV[1]]
+                        this.regFile.block[this.decoder.currInstrV[1]],
+                        this.memCallBack
                     );
                 } else {
                     this.memFile.writeByte(
                         aluOut,
-                        this.regFile.block[this.decoder.currInstrV[1]]
+                        this.regFile.block[this.decoder.currInstrV[1]],
+                        this.memCallBack
                     )
                 }
             }
@@ -89,12 +98,17 @@ export default class Simulation {
             /* Write Back */
             if (this.decoder.control.writeBack) {
                 if (this.decoder.control.memRead) {
-                    this.regFile.block[this.decoder.currInstrV[1]] = memRead;
+                    this.regFile.write(this.decoder.currInstrV[1],
+                                       memRead,
+                                       this.regCallBack);
                 } else if (this.decoder.currInstrType == 4) {
-                    this.regFile.block[this.decoder.currInstrV[1]] = 
-                        parseInt(this.decoder.currInstrV[2]);
+                    this.regFile.write(this.decoder.currInstrV[1],
+                                       parseInt(this.decoder.currInstrV[2]),
+                                       this.regCallBack);
                 } else {
-                    this.regFile.block[this.decoder.currInstrV[1]] = aluOut;
+                    this.regFile.write(this.decoder.currInstrV[1],
+                                       aluOut,
+                                       this.regCallBack);
                 }
             }
 
