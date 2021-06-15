@@ -1,4 +1,5 @@
 import Simulation from '../../sim/simulation';
+import {CallBackType} from '../../sim/register/register';
 
 export default class Editor {
   /**
@@ -7,9 +8,9 @@ export default class Editor {
   lineCount: number;
   sim: Simulation;
 
-  constructor() {
+  constructor(sim: Simulation) {
     this.lineCount = 1;
-    this.sim = null as any;
+    this.sim = sim;
     
     this.setup = this.setup.bind(this);
     this.setupCode = this.setupCode.bind(this);
@@ -64,9 +65,16 @@ export default class Editor {
 
     buildButton?.addEventListener('click', () => {
       let codeTA = document.getElementById('code');
-      let instr: string[] = codeTA?.nodeValue?.split('\n') || [];
-      this.sim = new Simulation(instr);
-      this.sim.assemble();
+
+      if (codeTA) {
+        let code: string = (<HTMLTextAreaElement>codeTA).value;
+        let instr: string[] = code.split('\n');
+        this.sim.assemble(instr);
+      }
     });
+
+    stepButton?.addEventListener('click', () => {
+      this.sim.step();
+    })
   }
 }

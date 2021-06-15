@@ -1,6 +1,7 @@
 import NavBar from './navbar/navbar';
 import Register from './register/register';
 import {REGISTER_NAME} from '../../sim/arch/arm/register';
+import Simulation from '../../sim/simulation';
 
 export default class Monitor {
     /**
@@ -10,9 +11,12 @@ export default class Monitor {
     navbar: NavBar;
     register: Register;
 
-    constructor() {
+    constructor(sim: Simulation) {
         this.navbar = new NavBar();
         this.register = new Register();
+        
+        /* Establish hook, register view changes when sim updates */
+        sim.regCallBack = this.register.write;
 
         this.setup = this.setup.bind(this);
 
@@ -20,6 +24,7 @@ export default class Monitor {
     }
 
     setup() {
+        /* Mount register views */
         REGISTER_NAME.forEach((regName, index) => {
             this.register.create(regName);
         });

@@ -22,4 +22,12 @@ export default class Register {
 
         regFileDiv?.appendChild(newReg);
     }
+
+    write(regName: string, value: number) {
+        let regValDiv = document.getElementById(`register-${regName}`);
+        
+        if (regValDiv) {
+            regValDiv.innerHTML = value.toString();
+        }
+    }
 }
