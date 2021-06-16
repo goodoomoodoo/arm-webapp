@@ -1,6 +1,6 @@
 import {REGISTER_NAME} from '../arch/arm/register'
 
-export interface CallBackType {
+export interface RegCBType {
     (regName: string, value: number): void
 }
 
@@ -26,7 +26,14 @@ export default class RegisterFile {
         }
     }
 
-    write(regName: string, value: number, callback: CallBackType) {
+    /**
+     * Write new value to register and invoke callback function with the same
+     * arguments
+     * @param regName Register name
+     * @param value New Value
+     * @param callback 
+     */
+    write(regName: string, value: number, callback: RegCBType) {
         this.block[regName] = value;
         callback(regName, value);
     }
