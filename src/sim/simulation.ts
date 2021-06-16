@@ -47,8 +47,6 @@ export default class Simulation {
         if (this.decoder.currInstr === undefined) return 2;
 
         while (!this.decoder.subInstrDone()) {
-            let i: number = this.decoder.counter;
-
             /* Execute */
             let aluOut: number = 0;
             switch (this.decoder.currInstrType) {
