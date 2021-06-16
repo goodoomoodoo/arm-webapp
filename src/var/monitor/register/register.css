@@ -6,11 +6,11 @@
 
 .Registerblock{
     position: relative;
-    min-width: 5em;
+    min-width: 2em;
     display: inline-grid;
-    grid-template-columns: 1fr 6fr;
+    grid-template-columns: 1fr 2fr;
     margin-top: 1em;
-    margin-right: 2em;
+    margin-right: 0.5em;
 }
 
 .Registerblock div {

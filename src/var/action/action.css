@@ -1,0 +1,21 @@
+.Action {
+    position: relative;
+    width: 100%;
+    height: 1.5em;
+    margin: 0 auto;
+    text-align: center;
+    box-shadow: 0 -9px 15px 1px #555;
+}
+
+.Action button {
+    color: #505050;
+    margin: 2px;
+    cursor: pointer;
+    background: white;
+    border: none;
+}
+
+.Action button:hover {
+    color: rgb(50, 50, 52);
+    background: #ededed;
+}
