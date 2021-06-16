@@ -22,19 +22,12 @@
             </div>
             <!-- Debug Monitor -->
             <div class="Monitor">
-                <!-- Navigation Bar -->
-                <div class='Navbar'>
-                    <button 
-                        id='select-register-btn'
-                        class='selected'>Register</button>
-    
-                    <button 
-                        id='select-memory-btn'
-                        class='unselected'>Memory</button>
-                </div>
-                <!-- Register/Memory Window -->
-                <div class="Window">
+                <div id="debug-window" class="Debug">
+                    <!-- Register Window -->
+                    <div class='DebugLabel'>Register</div>
                     <div id="monitor-register" class="Register"></div>
+                    <!-- Memory Window -->
+                    <div class="DebugLabel">Memory</div>
                 </div>
                 <!-- <Window state={this.state.selectedState} />
                 <Console /> -->

@@ -1,4 +1,3 @@
-import NavBar from './navbar/navbar';
 import Register from './register/register';
 import {REGISTER_NAME} from '../../sim/arch/arm/register';
 import Simulation from '../../sim/simulation';
@@ -8,15 +7,16 @@ export default class Monitor {
      * Monitor container
      */
 
-    navbar: NavBar;
     register: Register;
 
     constructor(sim: Simulation) {
-        this.navbar = new NavBar();
         this.register = new Register();
         
         /* Establish hook, register view changes when sim updates */
         sim.regCallBack = this.register.write;
+        this.toggleDisplay = this.toggleDisplay.bind(this);
+
+        sim.asmCallBack = this.toggleDisplay;
 
         this.setup = this.setup.bind(this);
 
@@ -28,5 +28,36 @@ export default class Monitor {
         REGISTER_NAME.forEach((regName, index) => {
             this.register.create(regName);
         });
+
+        /* Default to hide the register view */
+        this.hideRegister();
+    }
+
+    toggleDisplay(isAssembled: boolean) {
+        if (isAssembled) {
+            this.hideConsole();
+            this.showRegister();
+        } else {
+            this.hideRegister();
+            this.showConsole();
+        }
+    }
+
+    showRegister() {
+        let regFileDiv = document.getElementById('debug-window');
+        if (regFileDiv) regFileDiv.style.display = 'block';
+    }
+
+    hideRegister() {
+        let regFileDiv = document.getElementById('debug-window');
+        if (regFileDiv) regFileDiv.style.display = 'none';
+    }
+
+    showConsole() {
+
+    }
+
+    hideConsole() {
+
     }
 }

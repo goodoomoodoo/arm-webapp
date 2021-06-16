@@ -4,6 +4,10 @@ export default class Register {
      */
     constructor() {}
 
+    /**
+     * Create a new register HTML element in DOM
+     * @param regName Register name
+     */
     create(regName: string) {
         let regFileDiv = document.getElementById('monitor-register');
         let newReg = document.createElement('div');
@@ -23,6 +27,11 @@ export default class Register {
         regFileDiv?.appendChild(newReg);
     }
 
+    /**
+     * Change the register HTML element value
+     * @param regName Register name
+     * @param value New value
+     */
     write(regName: string, value: number) {
         let regValDiv = document.getElementById(`register-${regName}`);
         
