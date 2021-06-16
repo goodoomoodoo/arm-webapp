@@ -54,7 +54,7 @@ export default class Memory {
             this.block[addr] = value;
         }
 
-        callback(this.block);
+        if (callback) callback(this.block);
     }
 
     /**

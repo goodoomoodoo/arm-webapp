@@ -35,6 +35,6 @@ export default class RegisterFile {
      */
     write(regName: string, value: number, callback: RegCBType) {
         this.block[regName] = value;
-        callback(regName, value);
+        if (callback) callback(regName, value);
     }
 }

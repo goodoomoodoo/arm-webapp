@@ -41,19 +41,19 @@ export default class Simulation {
         this.step = this.step.bind(this);
     }
 
-    assemble = (instr: string[]) => {
+    assemble = async (instr: string[]) => {
         /* Assembled instruction */
         this.assembler = new Assembler(instr);
-        this.assembler.assemble()
+        await this.assembler.assemble()
             .then(ambInstr => {
                 this.decoder = new Decoder(ambInstr, this.regFile);
                 this.assembled = true;
-                this.asmCallBack(this.assembled);
+                if (this.asmCallBack) this.asmCallBack(this.assembled);
             })
             .catch(err => {
                 this.buildError = err;
                 this.assembled = false;
-                this.asmCallBack(this.assembled);
+                if (this.asmCallBack) this.asmCallBack(this.assembled);
             });
     }
 
