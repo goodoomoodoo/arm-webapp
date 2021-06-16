@@ -9,9 +9,9 @@ describe('Simulation Sanity Test', () => {
             'cmp r1, r3'
         ];
 
-        let sim: Simulation = new Simulation(instr);
+        let sim: Simulation = new Simulation();
 
-        await sim.assemble();
+        await sim.assemble(instr);
     });
 
     it('Step Test', async () => {
@@ -22,10 +22,11 @@ describe('Simulation Sanity Test', () => {
             'cmp r1, r3'
         ];
 
-        let sim: Simulation = new Simulation(instr);
+        let sim: Simulation = new Simulation();
 
-        await sim.assemble();
+        await sim.assemble(instr);
 
+        expect(sim.assembled).toBe(true);
         expect(sim.decoder.currInstr).toStrictEqual([['mov', 'r1', '10']]);
         expect(sim.decoder.currInstr.length).toBe(1);
 
