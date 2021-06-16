@@ -44,6 +44,7 @@ module.exports = [
         path.resolve(__dirname, 'src/var/monitor/monitor.css'),
         path.resolve(__dirname, 'src/var/monitor/navbar/navbar.css'),
         path.resolve(__dirname, 'src/var/editor/editor.css'),
+        path.resolve(__dirname, 'src/var/action/action.css'),
         path.resolve(__dirname, 'src/var/monitor/register/register.css')
       ]
     },
