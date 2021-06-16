@@ -67,7 +67,7 @@ export default class Assembler {
             instruction[i] = instruction[i].trim();
         }
 
-        instruction.filter(instr => instr === '');
+        instruction = instruction.filter(instr => instr === '');
 
         return instruction;
     }
