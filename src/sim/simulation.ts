@@ -2,7 +2,11 @@ import ALU from './alu/alu';
 import Assembler from './assembler/assembler';
 import Decoder from './decoder/decoder';
 import Memory from './memory/memory';
-import RegisterFile, {CallBackType} from './register/register';
+import RegisterFile, {RegCBType} from './register/register';
+
+export interface AsmCBType{
+    (isAssembled: boolean): void
+}
 
 export default class Simulation {
     /**
@@ -16,8 +20,10 @@ export default class Simulation {
     memFile: Memory;
     regFile: RegisterFile;
     assembled: boolean;
+    buildError: Error;
     memCallBack: Function;
-    regCallBack: CallBackType;
+    regCallBack: RegCBType;
+    asmCallBack: AsmCBType;
 
     constructor() {
         this.assembler = null as any;
@@ -26,19 +32,29 @@ export default class Simulation {
         this.memFile = new Memory();
         this.regFile = new RegisterFile();
         this.assembled = false;
+        this.buildError = null as any;
         this.memCallBack = null as any;
         this.regCallBack = null as any;
+        this.asmCallBack = null as any;
 
         this.assemble = this.assemble.bind(this);
         this.step = this.step.bind(this);
     }
 
-    assemble = async (instr: string[]) => {
+    assemble = (instr: string[]) => {
         /* Assembled instruction */
         this.assembler = new Assembler(instr);
-        let ambInstr: string[][][] = await this.assembler.assemble();
-        this.decoder = new Decoder(ambInstr, this.regFile);
-        this.assembled = true;
+        this.assembler.assemble()
+            .then(ambInstr => {
+                this.decoder = new Decoder(ambInstr, this.regFile);
+                this.assembled = true;
+                this.asmCallBack(this.assembled);
+            })
+            .catch(err => {
+                this.buildError = err;
+                this.assembled = false;
+                this.asmCallBack(this.assembled);
+            });
     }
 
     step(): number {
