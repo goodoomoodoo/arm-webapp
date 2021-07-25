@@ -8,15 +8,18 @@ export default class Monitor {
      */
 
     register: Register;
+    isInit: boolean;
 
     constructor(sim: Simulation) {
         this.register = new Register();
+        this.isInit = false;
         
         /* Establish hook, register view changes when sim updates */
         sim.regCallBack = this.register.write;
         this.toggleDisplay = this.toggleDisplay.bind(this);
 
         sim.asmCallBack = this.toggleDisplay;
+        sim.errCallBack = this.renderError;
 
         this.setup = this.setup.bind(this);
 
@@ -30,27 +33,62 @@ export default class Monitor {
         });
 
         /* Default to hide the register view */
-        this.hideRegister();
+        this.hideMonitor();
     }
 
+    /**
+     * Toggle monitor display based on assemble value
+     * @param isAssembled whether if code has been compiled
+     */
     toggleDisplay(isAssembled: boolean) {
+        /* Remove placeholder if not yet */
+        if (!this.isInit) {
+            this.hidePlaceholder();
+            this.showMonitor();
+            this.isInit = true;
+        }
+
         if (isAssembled) {
             this.hideConsole();
-            this.showRegister();
+            this.showDebug();
         } else {
-            this.hideRegister();
+            this.hideDebug();
             this.showConsole();
         }
     }
 
-    showRegister() {
+    renderError(error: Error) {
+        if (error) {
+            let consoleDiv = document.getElementById('console');
+            if (consoleDiv) {
+                consoleDiv.innerHTML = error.message;
+            }
+        }
+    }
+
+    showMonitor() {
+        let monitorDiv = document.getElementById('monitor');
+        if (monitorDiv) monitorDiv.style.display = 'block';
+    }
+
+    hideMonitor() {
+        let monitorDiv = document.getElementById('monitor');
+        if (monitorDiv) monitorDiv.style.display = 'none';
+    }
+
+    showDebug() {
         let regFileDiv = document.getElementById('debug-window');
         if (regFileDiv) regFileDiv.style.display = 'block';
     }
 
-    hideRegister() {
+    hideDebug() {
         let regFileDiv = document.getElementById('debug-window');
         if (regFileDiv) regFileDiv.style.display = 'none';
+    }
+
+    hidePlaceholder() {
+        let phDiv = document.getElementById('if-placeholder');
+        if (phDiv) phDiv.style.display = 'none';
     }
 
     showConsole() {
