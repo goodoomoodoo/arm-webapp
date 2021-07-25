@@ -4,8 +4,12 @@ import Decoder from './decoder/decoder';
 import Memory from './memory/memory';
 import RegisterFile, {RegCBType} from './register/register';
 
-export interface AsmCBType{
+export interface AsmCBType {
     (isAssembled: boolean): void
+}
+
+export interface ErrCBType {
+    (error: Error): void;
 }
 
 export default class Simulation {
@@ -22,6 +26,7 @@ export default class Simulation {
     assembled: boolean;
     buildError: Error;
     memCallBack: Function;
+    errCallBack: ErrCBType;
     regCallBack: RegCBType;
     asmCallBack: AsmCBType;
 
@@ -36,6 +41,7 @@ export default class Simulation {
         this.memCallBack = null as any;
         this.regCallBack = null as any;
         this.asmCallBack = null as any;
+        this.errCallBack = null as any;
 
         this.assemble = this.assemble.bind(this);
         this.step = this.step.bind(this);
@@ -47,6 +53,7 @@ export default class Simulation {
         await this.assembler.assemble()
             .then(ambInstr => {
                 this.decoder = new Decoder(ambInstr, this.regFile);
+                this.buildError = null as any;
                 this.assembled = true;
                 if (this.asmCallBack) this.asmCallBack(this.assembled);
             })
@@ -54,6 +61,7 @@ export default class Simulation {
                 this.buildError = err;
                 this.assembled = false;
                 if (this.asmCallBack) this.asmCallBack(this.assembled);
+                if (this.errCallBack) this.errCallBack(this.buildError);
             });
     }
 
