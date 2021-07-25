@@ -5,6 +5,9 @@
     height: 100%;
     margin: 0 auto;
     overflow: hidden;
+    z-index: 1;
+    background-color: white;
+    border-right: solid .5px #aaa;
 }
 
 .DevEditor {
@@ -12,10 +15,8 @@
     width: 100%;
     height: 100vh;
     max-height: 100%;
-    border: 1px solid #bbb;
     display: grid;
     grid-template-columns: 2em auto;
-    overflow-y: scroll; 
     overflow-x: hidden;
 }
 

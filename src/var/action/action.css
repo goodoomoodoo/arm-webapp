@@ -5,6 +5,7 @@
     margin: 0 auto;
     text-align: center;
     box-shadow: 0 -9px 15px 1px #555;
+    z-index: 2;
 }
 
 .Action button {
@@ -15,7 +16,7 @@
     border: none;
 }
 
-.Action button:hover {
+.Action button:active {
     color: rgb(50, 50, 52);
     background: #ededed;
 }

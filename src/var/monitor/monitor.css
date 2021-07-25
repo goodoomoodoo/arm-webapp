@@ -1,8 +1,13 @@
 .Monitor {
     position: relative;
-    width: 92%;
-    min-width: 30em;
+    min-width: 28em;
     padding: 1em;
-    padding-left: 1.5em;
-    padding-right: 1.5em;
+    padding-left: 4em;
+    padding-right: 4em;
+    background-color: white;
+}
+
+.DebugLabel {
+    position: relative;
+    margin-top: 2em;
 }

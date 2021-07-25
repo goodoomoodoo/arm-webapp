@@ -6,25 +6,23 @@
 
 .Registerblock{
     position: relative;
-    min-width: 2em;
+    width: 5em;
     display: inline-grid;
-    grid-template-columns: 1fr 2fr;
-    margin-top: 1em;
+    margin-top: 0.75em;
     margin-right: 0.5em;
 }
 
 .Registerblock div {
     position: relative;
-    font-size: 1em;
+    font-size: 0.75em;
     text-align: center;
-    padding: .25em;
-    color: #555;
+    color: rgb(97, 97, 97);
 }
 
+/* Register label has shorter line height */
 .Registerblock div:first-child {
     position: relative;
-    border: 1px solid rgb(8, 151, 91);
+    border: solid 1px rgb(35, 159, 106);
     border-radius: 3px;
-    width: 2em;
-    color: rgb(8, 151, 91);
+    color: rgb(35, 159, 106);
 }
