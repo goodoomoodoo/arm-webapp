@@ -20,17 +20,30 @@
                     <textarea id="code"></textarea>
                 </div>
             </div>
+            <!-- Placeholder -->
+            <div id="if-placeholder" class="Placeholder">
+                <h2>ARMIDE</h2>
+                <p>Click <button>Build</button> in the tool bar to compile your code</p>
+            </div>
             <!-- Debug Monitor -->
-            <div class="Monitor">
+            <div id="monitor" class="Monitor">
                 <div id="debug-window" class="Debug">
+                    <!-- Instruction/Console Window -->
+                    <div class='DebugLabel'></div>
+                    <div id="monitor-console" class="Console"></div>
                     <!-- Register Window -->
                     <div class='DebugLabel'>Register</div>
                     <div id="monitor-register" class="Register"></div>
                     <!-- Memory Window -->
                     <div class="DebugLabel">Memory</div>
+                    <div class="MemorySearchBar">
+                        <input id="memory-search-input" placeholder="32-bit Address..."/>
+                        <button id="memory-search-btn">search</button>
+                    </div>
                 </div>
-                <!-- <Window state={this.state.selectedState} />
-                <Console /> -->
+                <div id="console" class="Console">
+                    
+                </div>
             </div>
         </div>
     </body>
